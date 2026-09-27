@@ -1,0 +1,365 @@
+# Models
+
+All request and response types live in `ixraypy.models`. They are pydantic v2
+models generated from the panel's OpenAPI schema, so field names, defaults and
+validation match the panel exactly.
+
+```python
+from ixraypy import models
+
+user = models.UserCreate(username="alice", group_ids=[1], data_limit=10 * 1024**3)
+```
+
+Response models are regular pydantic objects: use `.model_dump()` for a dict or
+`.model_dump_json()` for JSON. Request models are sent with `exclude_unset=True`,
+so only the fields you set reach the panel (important for `modify_*` calls where
+`null` means "no change").
+
+## Enums (32)
+
+- `APIKeyStatus`: 'active', 'disabled'
+- `AdminStatus`: 'active', 'disabled', 'limited'
+- `ClientTemplateType`: 'clash_subscription', 'xray_subscription', 'singbox_subscription', 'user_agent', 'grpc_user_agent'
+- `ConfigFormat`: 'links', 'links_base64', 'xray', 'wireguard', 'openvpn', 'sing_box', 'clash', 'clash_meta', 'outline', 'block'
+- `CoreType`: 'xray', 'wg', 'mtproto', 'hysteria2', 'openvpn', 'singbox'
+- `DataLimitResetStrategy`: 'no_reset', 'day', 'week', 'month', 'year'
+- `ECHQueryStrategy`: 'none', 'half', 'full'
+- `FinalMaskQuicCongestion`: 'reno', 'bbr', 'brutal', 'force-brutal'
+- `FinalMaskTcpType`: 'header-custom', 'fragment', 'sudoku', 'xmc'
+- `FinalMaskUdpType`: 'header-custom', 'mkcp-legacy', 'noise', 'salamander', 'sudoku', 'xdns', 'xicmp', 'realm', 'header-dns', 'header-dtls', 'header-srtp', 'header-utp', 'header-wechat', 'header-wireguard', 'mkcp-original', 'mkcp-aes128gcm'
+- `GeoFilseRegion`: 'iran', 'china', 'russia'
+- `HWIDMode`: 'disabled', 'use_global', 'override'
+- `Language`: 'fa', 'en', 'ru', 'zh'
+- `MultiplexProtocol`: 'smux', 'yamux', 'h2mux'
+- `NodeConnectionType`: 'grpc', 'rest'
+- `NodeStatus`: 'connected', 'connecting', 'error', 'disabled', 'limited'
+- `Period`: 'minute', 'hour', 'day', 'month'
+- `PermissionScope`: 0, 1, 2
+- `Platform`: 'android', 'ios', 'windows', 'macos', 'linux', 'appletv', 'androidtv'
+- `ProxyHostALPN`: 'http/1.1', 'h2', 'h3'
+- `ProxyHostFingerprint`: '', 'chrome', 'firefox', 'safari', 'ios', 'android', 'edge', '360', 'qq', 'random', 'randomized', 'randomizednoalpn', 'unsafe'
+- `ProxyHostSecurity`: 'inbound_default', 'none', 'tls'
+- `RunMethod`: 'webhook', 'long-polling'
+- `ShadowsocksMethods`: 'aes-128-gcm', 'aes-256-gcm', 'chacha20-ietf-poly1305', 'xchacha20-poly1305'
+- `Status`: 'active', 'disabled'
+- `UsageTable`: 'node_user_usages', 'node_usages'
+- `UserCountMetric`: 'online', 'expired', 'limited'
+- `UserStatus`: 'active', 'disabled', 'limited', 'expired', 'on_hold'
+- `UserStatusCreate`: 'active', 'on_hold'
+- `UsernameGenerationStrategy`: 'random', 'sequence'
+- `XHttpModes`: 'auto', 'packet-up', 'stream-up', 'stream-one'
+- `XUDP`: 'reject', 'allow', 'skip'
+
+## Models (311)
+
+- `APIKeyCreate`
+- `APIKeyCreateResponse`
+- `APIKeyResponse`
+- `APIKeyUpdate`
+- `APIKeysPermissions`
+- `APIKeysResponse`
+- `AdminBase`
+- `AdminContactInfo`
+- `AdminCreate`
+- `AdminDetails`
+- `AdminId`
+- `AdminModify`
+- `AdminNotificationEnable`
+- `AdminRoleCreate`
+- `AdminRoleData`
+- `AdminRoleModify`
+- `AdminRoleResponse`
+- `AdminRoleSimple`
+- `AdminRolesResponse`
+- `AdminRolesSimpleResponse`
+- `AdminSimple`
+- `AdminsPermissions`
+- `AdminsResponse`
+- `AdminsSimpleResponse`
+- `Application`
+- `Backup`
+- `BackupInfo`
+- `BackupList`
+- `BalancerInfo`
+- `BalancerOverride`
+- `BaseHost`
+- `BaseNotificationEnable`
+- `BodyAdminToken`
+- `Brutal`
+- `BulkAPIKeySelection`
+- `BulkAdminSelection`
+- `BulkAdminsActionResponse`
+- `BulkClientTemplateSelection`
+- `BulkCoreSelection`
+- `BulkGroup`
+- `BulkGroupSelection`
+- `BulkGroupsActionResponse`
+- `BulkHostSelection`
+- `BulkHostsActionResponse`
+- `BulkNodeSelection`
+- `BulkNodesActionResponse`
+- `BulkUser`
+- `BulkUserTemplateSelection`
+- `BulkUserTemplatesActionResponse`
+- `BulkUsersActionResponse`
+- `BulkUsersApplyTemplate`
+- `BulkUsersCreateResponse`
+- `BulkUsersFromTemplate`
+- `BulkUsersProxy`
+- `BulkUsersSelection`
+- `BulkUsersSetOwner`
+- `CMaxReuseTimes`
+- `CRUDPermissions`
+- `ClashMuxSettings`
+- `ClientECHSettings`
+- `ClientTemplateCreate`
+- `ClientTemplateModify`
+- `ClientTemplateResponse`
+- `ClientTemplateResponseList`
+- `ClientTemplateSimple`
+- `ClientTemplatesSimpleResponse`
+- `Conflict`
+- `CoreCreate`
+- `CoreOutboundStats`
+- `CoreRelease`
+- `CoreReleasesResponse`
+- `CoreResponse`
+- `CoreResponseList`
+- `CoreSimple`
+- `CoresSimpleResponse`
+- `CreateHost`
+- `CreateUserFromTemplate`
+- `CustomVariable`
+- `DataLimit`
+- `DefaultTimeout`
+- `DeviceLimit`
+- `DeviceLimit4`
+- `DownloadLink`
+- `ECHSettings`
+- `ExcludeInboundTags`
+- `ExpireDuration`
+- `ExtraSettings`
+- `FallbackLimit`
+- `FallbacksInboundTags`
+- `FinalMask`
+- `FinalMaskDomainSettings`
+- `FinalMaskFragmentSettings`
+- `FinalMaskMkcpLegacySettings`
+- `FinalMaskNoiseItem`
+- `FinalMaskNoiseSettings`
+- `FinalMaskPasswordSettings`
+- `FinalMaskQuicParams`
+- `FinalMaskRealmSettings`
+- `FinalMaskSalamanderSettings`
+- `FinalMaskSudokuSettings`
+- `FinalMaskTcpHeaderCustomSettings`
+- `FinalMaskTcpLayer`
+- `FinalMaskUdpHeaderCustomSettings`
+- `FinalMaskUdpHop`
+- `FinalMaskUdpLayer`
+- `FinalMaskXdnsSettings`
+- `FinalMaskXicmpSettings`
+- `FinalMaskXmcProfile`
+- `FinalMaskXmcSettings`
+- `Forbidden`
+- `FragmentSettings`
+- `GRPCSettings`
+- `General`
+- `GeoIpInfo`
+- `GrantType`
+- `GroupCreate`
+- `GroupModify`
+- `GroupResponse`
+- `GroupSimple`
+- `GroupsResponse`
+- `GroupsSimpleResponse`
+- `HMaxRequestTimes`
+- `HMaxReusableSecs`
+- `HTTPException`
+- `HTTPRequest`
+- `HTTPResponse`
+- `HTTPValidationError`
+- `HWIDSettings`
+- `Host`
+- `HostNotificationEnable`
+- `HostsPermissions`
+- `HwidsPermissions`
+- `HysteriaSettings`
+- `InboundSummary`
+- `InternalTimeout`
+- `KCPSettings`
+- `KeepaliveSeconds`
+- `LiveRoutingRule`
+- `LiveRoutingRuleAdd`
+- `LiveRoutingRules`
+- `MTProtoSettings`
+- `MaxConcurrency`
+- `MaxConnections`
+- `MaxLimit`
+- `MinLimit`
+- `ModifyUserByTemplate`
+- `Mtu`
+- `MuxSettingsInput`
+- `MuxSettingsOutput`
+- `Name`
+- `Name1`
+- `Name3`
+- `NextPlanModel`
+- `NodeCoreUpdate`
+- `NodeCreate`
+- `NodeGeoFilesUpdate`
+- `NodeModify`
+- `NodeNotificationEnable`
+- `NodeOutboundLatency`
+- `NodeOutboundsLatencyResponse`
+- `NodeRealtimeStats`
+- `NodeResponse`
+- `NodeSettings`
+- `NodeSimple`
+- `NodeStats`
+- `NodeStatsList`
+- `NodeUsageStat`
+- `NodeUsageStatsList`
+- `NodesOnlineCounts`
+- `NodesPermissions`
+- `NodesResponse`
+- `NodesSimpleResponse`
+- `NoiseSettings`
+- `NotFound`
+- `Note`
+- `Note4`
+- `NotificationChannel`
+- `NotificationChannels`
+- `NotificationEnable`
+- `NotificationSettings`
+- `OnHoldExpireDuration`
+- `OpenVPNSettings`
+- `OutboundProbePoint`
+- `OutboundStats`
+- `OutboundTrafficPoint`
+- `OwnerCreateRequest`
+- `OwnerResetRequest`
+- `OwnerUpgradeRequest`
+- `Packets`
+- `ProxyTable`
+- `ProxyUrl`
+- `QueryServerName`
+- `RandRange`
+- `RealityScanRequest`
+- `RealityScanResult`
+- `RecentEvent`
+- `RecentEventList`
+- `RemoveAPIKeysResponse`
+- `RemoveAdminsResponse`
+- `RemoveClientTemplatesResponse`
+- `RemoveCoresResponse`
+- `RemoveGroupsResponse`
+- `RemoveHostsResponse`
+- `RemoveNodesResponse`
+- `RemoveUserTemplatesResponse`
+- `RemoveUsersResponse`
+- `Reserved`
+- `RoleAccess`
+- `RoleFeatures`
+- `RoleHWIDSettings`
+- `RoleLimits`
+- `RolePermissions`
+- `RouteTestRequest`
+- `RouteTestResult`
+- `ScMaxEachPostBytes`
+- `ScMinPostsIntervalMs`
+- `SeqPlacement`
+- `SessionIdLength`
+- `SessionIdTable`
+- `SessionPlacement`
+- `SettingsPermissions`
+- `SettingsSchema`
+- `ShadowsocksSettings`
+- `SingBoxFragmentSettings`
+- `SingBoxMuxSettings`
+- `Sni`
+- `StartNumber`
+- `Status2`
+- `SubFormatEnable`
+- `SubRule`
+- `Subscription`
+- `SubscriptionTemplates`
+- `SubscriptionUserResponse`
+- `SuspiciousUser`
+- `SuspiciousUsersList`
+- `SystemPermissions`
+- `SystemResourceStats`
+- `SystemStats`
+- `SystemUsersStats`
+- `TcpSettings`
+- `Telegram`
+- `Timeout`
+- `Token`
+- `TopUserUsage`
+- `TopUsersUsageList`
+- `TotpCode`
+- `TotpSetup`
+- `TransportSettings`
+- `TrojanSettings`
+- `Type`
+- `Unauthorized`
+- `UplinkChunkSize`
+- `UplinkDataPlacement`
+- `UsageCoefficient`
+- `UserCountMetricStat`
+- `UserCountMetricStatsList`
+- `UserCreate`
+- `UserEventList`
+- `UserEventResponse`
+- `UserHWIDListResponse`
+- `UserHWIDResponse`
+- `UserIPList`
+- `UserIPListAll`
+- `UserIpSeenList`
+- `UserIpSeenResponse`
+- `UserModify`
+- `UserNotificationEnable`
+- `UserResponse`
+- `UserSimple`
+- `UserStatusToggle`
+- `UserSubscriptionUpdateChart`
+- `UserSubscriptionUpdateChartSegment`
+- `UserSubscriptionUpdateChartStat`
+- `UserSubscriptionUpdateList`
+- `UserSubscriptionUpdateSchema`
+- `UserTemplateCreate`
+- `UserTemplateModify`
+- `UserTemplateResponse`
+- `UserTemplateSimple`
+- `UserTemplatesSimpleResponse`
+- `UserUsageStat`
+- `UserUsageStatsList`
+- `UsernamePrefix`
+- `UsernameSuffix`
+- `UsersPermissions`
+- `UsersResponse`
+- `UsersSimpleResponse`
+- `VMessSettings`
+- `ValidationError`
+- `VerifyPeerCertByName`
+- `VlessRoute`
+- `VlessSettings`
+- `WebSocketSettings`
+- `Webhook`
+- `WebhookInfo`
+- `WireGuardHostOverrides`
+- `WireGuardSettings`
+- `WireGuardSubnetUsage`
+- `WorkerHealth`
+- `WorkersHealth`
+- `XHttpSettings`
+- `XMuxSettings`
+- `XPaddingBytes`
+- `XPaddingMethod`
+- `XPaddingPlacement`
+- `Xray`
+- `XrayECHSettings`
+- `XrayFragmentSettings`
+- `XrayMuxSettingsInput`
+- `XrayMuxSettingsOutput`
+- `XrayNoiseSettings`

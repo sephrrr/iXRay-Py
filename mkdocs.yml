@@ -1,0 +1,11 @@
+site_name: ixraypy
+repo_url: https://github.com/sephrrr/iXRay-Py
+theme:
+  name: material
+  palette:
+    scheme: slate
+nav:
+  - Home: index.md
+  - Examples: examples.md
+  - API reference: reference.md
+  - Models: models.md
