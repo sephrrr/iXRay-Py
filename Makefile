@@ -8,9 +8,9 @@ spec:            ## fetch openapi.json from a panel running with DOCS=1
 generate:        ## regenerate models and resource classes from spec/openapi.json
 	uv run datamodel-codegen --input spec/openapi.json --input-file-type openapi \
 	  --output src/ixraypy/models.py --output-model-type pydantic_v2.BaseModel \
-	  --use-standard-collections --use-union-operator --field-constraints \
+	  --use-standard-collections --use-union-operator --use-annotated \
 	  --use-schema-description --use-field-description --target-python-version 3.11 \
-	  --disable-timestamp --use-double-quotes
+	  --disable-timestamp --use-double-quotes --collapse-root-models
 	uv run python scripts/generate.py
 	uv run ruff format src scripts
 	uv run ruff check src scripts --fix

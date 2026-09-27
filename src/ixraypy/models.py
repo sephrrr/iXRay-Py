@@ -4,18 +4,10 @@
 from __future__ import annotations
 
 from enum import IntEnum, StrEnum
-from typing import Any
+from typing import Annotated, Any
 from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel, SecretStr
-
-
-class Note(RootModel[str]):
-    root: str = Field(..., max_length=512, title="Note")
-
-
-class AdminId(RootModel[int]):
-    root: int = Field(..., ge=1, title="Admin Id")
 
 
 class APIKeyStatus(StrEnum):
@@ -23,17 +15,13 @@ class APIKeyStatus(StrEnum):
     disabled = "disabled"
 
 
-class Name(RootModel[str]):
-    root: str = Field(..., max_length=128, min_length=1, title="Name")
-
-
 class AdminBase(BaseModel):
     """
     Minimal admin model containing only the username.
     """
 
-    id: int | None = Field(None, title="Id")
-    username: str = Field(..., title="Username")
+    id: Annotated[int | None, Field(title="Id")] = None
+    username: Annotated[str, Field(title="Username")]
 
 
 class Status(StrEnum):
@@ -42,30 +30,28 @@ class Status(StrEnum):
 
 
 class AdminNotificationEnable(BaseModel):
-    create: bool | None = Field(True, title="Create")
-    modify: bool | None = Field(True, title="Modify")
-    delete: bool | None = Field(True, title="Delete")
-    reset_usage: bool | None = Field(True, title="Reset Usage")
-    login: bool | None = Field(True, title="Login")
-    usage_limit_warning: bool | None = Field(True, title="Usage Limit Warning")
-    usage_limit_warning_percentages: list[int] | None = Field(
-        None, title="Usage Limit Warning Percentages"
+    create: Annotated[bool | None, Field(title="Create")] = True
+    modify: Annotated[bool | None, Field(title="Modify")] = True
+    delete: Annotated[bool | None, Field(title="Delete")] = True
+    reset_usage: Annotated[bool | None, Field(title="Reset Usage")] = True
+    login: Annotated[bool | None, Field(title="Login")] = True
+    usage_limit_warning: Annotated[bool | None, Field(title="Usage Limit Warning")] = (
+        True
     )
-
-
-class Name1(RootModel[str]):
-    root: str = Field(..., max_length=64, title="Name")
+    usage_limit_warning_percentages: Annotated[
+        list[int] | None, Field(title="Usage Limit Warning Percentages")
+    ] = None
 
 
 class AdminRoleSimple(BaseModel):
-    id: int = Field(..., title="Id")
-    name: str = Field(..., title="Name")
-    is_owner: bool = Field(..., title="Is Owner")
+    id: Annotated[int, Field(title="Id")]
+    name: Annotated[str, Field(title="Name")]
+    is_owner: Annotated[bool, Field(title="Is Owner")]
 
 
 class AdminRolesSimpleResponse(BaseModel):
-    roles: list[AdminRoleSimple] = Field(..., title="Roles")
-    total: int = Field(..., title="Total")
+    roles: Annotated[list[AdminRoleSimple], Field(title="Roles")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class AdminSimple(BaseModel):
@@ -73,8 +59,8 @@ class AdminSimple(BaseModel):
     Lightweight admin model with only id and username for performance.
     """
 
-    id: int = Field(..., title="Id")
-    username: str = Field(..., title="Username")
+    id: Annotated[int, Field(title="Id")]
+    username: Annotated[str, Field(title="Username")]
 
 
 class AdminStatus(StrEnum):
@@ -88,8 +74,8 @@ class AdminsSimpleResponse(BaseModel):
     Response model for lightweight admin list.
     """
 
-    admins: list[AdminSimple] = Field(..., title="Admins")
-    total: int = Field(..., title="Total")
+    admins: Annotated[list[AdminSimple], Field(title="Admins")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class Backup(BaseModel):
@@ -97,81 +83,63 @@ class Backup(BaseModel):
     Scheduled PostgreSQL dumps kept on the panel's data volume.
     """
 
-    enabled: bool | None = Field(True, title="Enabled")
-    interval_hours: int | None = Field(24, ge=1, le=720, title="Interval Hours")
-    keep: int | None = Field(14, ge=0, title="Keep")
+    enabled: Annotated[bool | None, Field(title="Enabled")] = True
+    interval_hours: Annotated[
+        int | None, Field(ge=1, le=720, title="Interval Hours")
+    ] = 24
+    keep: Annotated[int | None, Field(ge=0, title="Keep")] = 14
     """
     How many dumps to keep; 0 keeps every one
     """
-    send_telegram: bool | None = Field(False, title="Send Telegram")
+    send_telegram: Annotated[bool | None, Field(title="Send Telegram")] = False
     """
     Also send each dump to the notification chat
     """
 
 
 class BackupInfo(BaseModel):
-    name: str = Field(..., title="Name")
-    size: int = Field(..., title="Size")
-    created_at: str = Field(..., title="Created At")
+    name: Annotated[str, Field(title="Name")]
+    size: Annotated[int, Field(title="Size")]
+    created_at: Annotated[str, Field(title="Created At")]
 
 
 class BackupList(BaseModel):
-    backups: list[BackupInfo] = Field(..., title="Backups")
-    total_size: int = Field(..., title="Total Size")
+    backups: Annotated[list[BackupInfo], Field(title="Backups")]
+    total_size: Annotated[int, Field(title="Total Size")]
 
 
 class BalancerInfo(BaseModel):
-    override_target: str | None = Field("", title="Override Target")
-    principle_target: list[str] | None = Field([], title="Principle Target")
+    override_target: Annotated[str | None, Field(title="Override Target")] = ""
+    principle_target: Annotated[list[str] | None, Field(title="Principle Target")] = []
 
 
 class BalancerOverride(BaseModel):
-    target: str | None = Field("", title="Target")
+    target: Annotated[str | None, Field(title="Target")] = ""
     """
     outbound tag to force, empty to clear
     """
 
 
-class Sni(RootModel[list[str]]):
-    root: list[str] = Field(..., title="Sni")
-
-
-class Host(RootModel[list[str]]):
-    root: list[str] = Field(..., title="Host")
-
-
-class VlessRoute(RootModel[str]):
-    root: str = Field(..., pattern="^$|^[0-9a-fA-F]{4}$", title="Vless Route")
-
-
-class VerifyPeerCertByName(RootModel[list[str]]):
-    root: list[str] = Field(..., title="Verify Peer Cert By Name")
-
-
 class BaseNotificationEnable(BaseModel):
-    create: bool | None = Field(True, title="Create")
-    modify: bool | None = Field(True, title="Modify")
-    delete: bool | None = Field(True, title="Delete")
-
-
-class GrantType(RootModel[str]):
-    root: str = Field(..., pattern="^password$", title="Grant Type")
+    create: Annotated[bool | None, Field(title="Create")] = True
+    modify: Annotated[bool | None, Field(title="Modify")] = True
+    delete: Annotated[bool | None, Field(title="Delete")] = True
 
 
 class BodyAdminToken(BaseModel):
-    otp: str | None = Field(None, title="Otp")
-    grant_type: GrantType | None = Field(None, title="Grant Type")
-    username: str = Field(..., title="Username")
-    password: SecretStr = Field(..., title="Password")
-    scope: str | None = Field("", title="Scope")
-    client_id: str | None = Field(None, title="Client Id")
-    client_secret: SecretStr | None = Field(None, title="Client Secret")
+    otp: Annotated[str | None, Field(title="Otp")] = None
+    grant_type: Annotated[str | None, Field(title="Grant Type")] = None
+    username: Annotated[str, Field(title="Username")]
+    password: Annotated[SecretStr, Field(title="Password")]
+    scope: Annotated[str | None, Field(title="Scope")] = ""
+    client_id: Annotated[str | None, Field(title="Client Id")] = None
+    client_secret: Annotated[SecretStr | None, Field(title="Client Secret")] = None
 
 
 class Brutal(BaseModel):
-    enable: bool | None = Field(False, title="Enable")
-    up_mbps: int = Field(..., title="Up Mbps")
-    down_mbps: int = Field(..., title="Down Mbps")
+    enable: Annotated[bool | None, Field(title="Enable")] = False
+    up_mbps: Annotated[int, Field(title="Up Mbps")]
+    down_mbps: Annotated[int, Field(title="Down Mbps")]
 
 
 class BulkAPIKeySelection(BaseModel):
@@ -179,7 +147,7 @@ class BulkAPIKeySelection(BaseModel):
     Model for bulk API key selection by IDs.
     """
 
-    ids: list[int] | None = Field(None, title="Ids")
+    ids: Annotated[list[int] | None, Field(title="Ids")] = None
 
 
 class BulkAdminSelection(BaseModel):
@@ -187,7 +155,7 @@ class BulkAdminSelection(BaseModel):
     Model for bulk admin selection by IDs
     """
 
-    ids: list[int] | None = Field(None, title="Ids")
+    ids: Annotated[list[int] | None, Field(title="Ids")] = None
 
 
 class BulkAdminsActionResponse(BaseModel):
@@ -195,8 +163,8 @@ class BulkAdminsActionResponse(BaseModel):
     Response model for bulk admin actions.
     """
 
-    admins: list[str] = Field(..., title="Admins")
-    count: int = Field(..., title="Count")
+    admins: Annotated[list[str], Field(title="Admins")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class BulkClientTemplateSelection(BaseModel):
@@ -204,7 +172,7 @@ class BulkClientTemplateSelection(BaseModel):
     Model for bulk client template selection by IDs
     """
 
-    ids: list[int] | None = Field(None, title="Ids")
+    ids: Annotated[list[int] | None, Field(title="Ids")] = None
 
 
 class BulkCoreSelection(BaseModel):
@@ -212,16 +180,16 @@ class BulkCoreSelection(BaseModel):
     Model for bulk core selection by IDs
     """
 
-    ids: list[int] | None = Field(None, title="Ids")
+    ids: Annotated[list[int] | None, Field(title="Ids")] = None
 
 
 class BulkGroup(BaseModel):
-    group_ids: list[int] = Field(..., title="Group Ids")
-    has_group_ids: list[int] | None = Field(None, title="Has Group Ids")
-    has_no_group: bool | None = Field(False, title="Has No Group")
-    admins: list[int] | None = Field(None, title="Admins")
-    users: list[int] | None = Field(None, title="Users")
-    dry_run: bool | None = Field(False, title="Dry Run")
+    group_ids: Annotated[list[int], Field(title="Group Ids")]
+    has_group_ids: Annotated[list[int] | None, Field(title="Has Group Ids")] = None
+    has_no_group: Annotated[bool | None, Field(title="Has No Group")] = False
+    admins: Annotated[list[int] | None, Field(title="Admins")] = None
+    users: Annotated[list[int] | None, Field(title="Users")] = None
+    dry_run: Annotated[bool | None, Field(title="Dry Run")] = False
 
 
 class BulkGroupSelection(BaseModel):
@@ -229,7 +197,7 @@ class BulkGroupSelection(BaseModel):
     Model for bulk group selection by IDs
     """
 
-    ids: list[int] | None = Field(None, title="Ids")
+    ids: Annotated[list[int] | None, Field(title="Ids")] = None
 
 
 class BulkGroupsActionResponse(BaseModel):
@@ -237,8 +205,8 @@ class BulkGroupsActionResponse(BaseModel):
     Response model for bulk group actions.
     """
 
-    groups: list[str] = Field(..., title="Groups")
-    count: int = Field(..., title="Count")
+    groups: Annotated[list[str], Field(title="Groups")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class BulkHostSelection(BaseModel):
@@ -246,7 +214,7 @@ class BulkHostSelection(BaseModel):
     Model for bulk host selection by IDs
     """
 
-    ids: list[int] | None = Field(None, title="Ids")
+    ids: Annotated[list[int] | None, Field(title="Ids")] = None
 
 
 class BulkHostsActionResponse(BaseModel):
@@ -254,8 +222,8 @@ class BulkHostsActionResponse(BaseModel):
     Response model for bulk host actions.
     """
 
-    hosts: list[str] = Field(..., title="Hosts")
-    count: int = Field(..., title="Count")
+    hosts: Annotated[list[str], Field(title="Hosts")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class BulkNodeSelection(BaseModel):
@@ -263,7 +231,7 @@ class BulkNodeSelection(BaseModel):
     Model for bulk node selection by IDs
     """
 
-    ids: list[int] | None = Field(None, title="Ids")
+    ids: Annotated[list[int] | None, Field(title="Ids")] = None
 
 
 class BulkNodesActionResponse(BaseModel):
@@ -271,8 +239,8 @@ class BulkNodesActionResponse(BaseModel):
     Response model for bulk node actions.
     """
 
-    nodes: list[str] = Field(..., title="Nodes")
-    count: int = Field(..., title="Count")
+    nodes: Annotated[list[str], Field(title="Nodes")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class BulkUserTemplateSelection(BaseModel):
@@ -280,7 +248,7 @@ class BulkUserTemplateSelection(BaseModel):
     Model for bulk user template selection by IDs
     """
 
-    ids: list[int] | None = Field(None, title="Ids")
+    ids: Annotated[list[int] | None, Field(title="Ids")] = None
 
 
 class BulkUserTemplatesActionResponse(BaseModel):
@@ -288,17 +256,13 @@ class BulkUserTemplatesActionResponse(BaseModel):
     Response model for bulk user template actions.
     """
 
-    templates: list[str] = Field(..., title="Templates")
-    count: int = Field(..., title="Count")
+    templates: Annotated[list[str], Field(title="Templates")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class BulkUsersActionResponse(BaseModel):
-    users: list[str] = Field(..., title="Users")
-    count: int = Field(..., title="Count")
-
-
-class Note4(RootModel[str]):
-    root: str = Field(..., max_length=500, title="Note")
+    users: Annotated[list[str], Field(title="Users")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class BulkUsersApplyTemplate(BaseModel):
@@ -306,34 +270,25 @@ class BulkUsersApplyTemplate(BaseModel):
     Apply a user template to a selection of existing users (by ID).
     """
 
-    user_template_id: int = Field(..., title="User Template Id")
-    note: Note4 | None = Field(None, title="Note")
-    ids: list[int] | None = Field(None, title="Ids")
+    user_template_id: Annotated[int, Field(title="User Template Id")]
+    note: Annotated[str | None, Field(title="Note")] = None
+    ids: Annotated[list[int] | None, Field(title="Ids")] = None
 
 
 class BulkUsersCreateResponse(BaseModel):
-    subscription_urls: list[str] | None = Field(None, title="Subscription Urls")
-    created: int | None = Field(0, title="Created")
-
-
-class StartNumber(RootModel[int]):
-    root: int = Field(..., ge=0, title="Start Number")
-    """
-    Starting suffix for sequence strategy (defaults to 1; base username digits are ignored)
-    """
+    subscription_urls: Annotated[list[str] | None, Field(title="Subscription Urls")] = (
+        None
+    )
+    created: Annotated[int | None, Field(title="Created")] = 0
 
 
 class BulkUsersSelection(BaseModel):
-    ids: list[int] | None = Field(None, title="Ids")
+    ids: Annotated[list[int] | None, Field(title="Ids")] = None
 
 
 class BulkUsersSetOwner(BaseModel):
-    ids: list[int] | None = Field(None, title="Ids")
-    admin_username: str = Field(..., title="Admin Username")
-
-
-class QueryServerName(RootModel[str]):
-    root: str = Field(..., max_length=255, title="Query Server Name")
+    ids: Annotated[list[int] | None, Field(title="Ids")] = None
+    admin_username: Annotated[str, Field(title="Admin Username")]
 
 
 class ClientECHSettings(BaseModel):
@@ -341,14 +296,16 @@ class ClientECHSettings(BaseModel):
     ECH settings shared by Mihomo and sing-box clients.
     """
 
-    config: str | None = Field(None, title="Config")
-    query_server_name: QueryServerName | None = Field(None, title="Query Server Name")
+    config: Annotated[str | None, Field(title="Config")] = None
+    query_server_name: Annotated[
+        str | None, Field(title="Query Server Name")
+    ] = None
 
 
 class ClientTemplateModify(BaseModel):
-    name: Name1 | None = Field(None, title="Name")
-    content: str | None = Field(None, title="Content")
-    is_default: bool | None = Field(None, title="Is Default")
+    name: Annotated[str | None, Field(title="Name")] = None
+    content: Annotated[str | None, Field(title="Content")] = None
+    is_default: Annotated[bool | None, Field(title="Is Default")] = None
 
 
 class ClientTemplateType(StrEnum):
@@ -373,32 +330,20 @@ class ConfigFormat(StrEnum):
 
 
 class Conflict(BaseModel):
-    detail: str | None = Field("Entity already exists", title="Detail")
-
-
-class Name3(RootModel[str]):
-    root: str = Field(..., max_length=256, title="Name")
-
-
-class ExcludeInboundTags(RootModel[list[Any]]):
-    root: list[Any] = Field(..., title="Exclude Inbound Tags")
-
-
-class FallbacksInboundTags(RootModel[list[Any]]):
-    root: list[Any] = Field(..., title="Fallbacks Inbound Tags")
+    detail: Annotated[str | None, Field(title="Detail")] = "Entity already exists"
 
 
 class CoreRelease(BaseModel):
-    tag: str = Field(..., title="Tag")
-    name: str = Field(..., title="Name")
-    prerelease: bool | None = Field(False, title="Prerelease")
-    published_at: str | None = Field(None, title="Published At")
+    tag: Annotated[str, Field(title="Tag")]
+    name: Annotated[str, Field(title="Name")]
+    prerelease: Annotated[bool | None, Field(title="Prerelease")] = False
+    published_at: Annotated[str | None, Field(title="Published At")] = None
 
 
 class CoreReleasesResponse(BaseModel):
-    core: str = Field(..., title="Core")
-    repo: str = Field(..., title="Repo")
-    releases: list[CoreRelease] = Field(..., title="Releases")
+    core: Annotated[str, Field(title="Core")]
+    repo: Annotated[str, Field(title="Repo")]
+    releases: Annotated[list[CoreRelease], Field(title="Releases")]
 
 
 class CoreType(StrEnum):
@@ -411,14 +356,14 @@ class CoreType(StrEnum):
 
 
 class CreateUserFromTemplate(BaseModel):
-    user_template_id: int = Field(..., title="User Template Id")
-    note: Note4 | None = Field(None, title="Note")
-    username: str = Field(..., title="Username")
+    user_template_id: Annotated[int, Field(title="User Template Id")]
+    note: Annotated[str | None, Field(title="Note")] = None
+    username: Annotated[str, Field(title="Username")]
 
 
 class CustomVariable(BaseModel):
-    key: str = Field(..., max_length=64, title="Key")
-    value: str | None = Field("", max_length=512, title="Value")
+    key: Annotated[str, Field(max_length=64, title="Key")]
+    value: Annotated[str | None, Field(max_length=512, title="Value")] = ""
 
 
 class DataLimitResetStrategy(StrEnum):
@@ -439,37 +384,25 @@ class FinalMaskDomainSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    domain: str | None = Field(None, title="Domain")
-
-
-class Packets(RootModel[str]):
-    root: str = Field(..., pattern="^$|^(:?tlshello|[\\d-]{1,16})$", title="Packets")
+    domain: Annotated[str | None, Field(title="Domain")] = None
 
 
 class FinalMaskFragmentSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    packets: Packets | None = Field(None, title="Packets")
-    lengths: list[str | int] | None = Field(None, title="Lengths")
-    delays: list[str | int] | None = Field(None, title="Delays")
-    maxSplit: str | int | None = Field(None, title="Maxsplit")
+    packets: Annotated[str | None, Field(title="Packets")] = None
+    lengths: Annotated[list[str | int] | None, Field(title="Lengths")] = None
+    delays: Annotated[list[str | int] | None, Field(title="Delays")] = None
+    maxSplit: Annotated[str | int | None, Field(title="Maxsplit")] = None
 
 
 class FinalMaskMkcpLegacySettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    header: str | None = Field(None, title="Header")
-    value: str | None = Field(None, title="Value")
-
-
-class Type(RootModel[str]):
-    root: str = Field(..., pattern="^$|^(:?array|str|base64|hex)$", title="Type")
-
-
-class RandRange(RootModel[str]):
-    root: str = Field(..., pattern="^\\d{1,16}(-\\d{1,16})?$", title="Randrange")
+    header: Annotated[str | None, Field(title="Header")] = None
+    value: Annotated[str | None, Field(title="Value")] = None
 
 
 class FinalMaskNoiseItem(BaseModel):
@@ -480,26 +413,26 @@ class FinalMaskNoiseItem(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    type: Type | None = Field(None, title="Type")
-    packet: str | list[int] | None = Field(None, title="Packet")
-    delay: str | int | None = Field(None, title="Delay")
-    rand: int | str | None = Field(None, title="Rand")
-    randRange: RandRange | None = Field(None, title="Randrange")
+    type: Annotated[str | None, Field(title="Type")] = None
+    packet: Annotated[str | list[int] | None, Field(title="Packet")] = None
+    delay: Annotated[str | int | None, Field(title="Delay")] = None
+    rand: Annotated[int | str | None, Field(title="Rand")] = None
+    randRange: Annotated[str | None, Field(title="Randrange")] = None
 
 
 class FinalMaskNoiseSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    reset: str | int | None = Field(None, title="Reset")
-    noise: list[FinalMaskNoiseItem] | None = Field(None, title="Noise")
+    reset: Annotated[str | int | None, Field(title="Reset")] = None
+    noise: Annotated[list[FinalMaskNoiseItem] | None, Field(title="Noise")] = None
 
 
 class FinalMaskPasswordSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    password: str | None = Field(None, title="Password")
+    password: Annotated[str | None, Field(title="Password")] = None
 
 
 class FinalMaskQuicCongestion(StrEnum):
@@ -513,38 +446,44 @@ class FinalMaskRealmSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    url: str | None = Field(None, title="Url")
-    stunServers: list[str] | None = Field(None, title="Stunservers")
-    tlsConfig: dict[str, Any] | None = Field(None, title="Tlsconfig")
+    url: Annotated[str | None, Field(title="Url")] = None
+    stunServers: Annotated[list[str] | None, Field(title="Stunservers")] = None
+    tlsConfig: Annotated[dict[str, Any] | None, Field(title="Tlsconfig")] = None
 
 
 class FinalMaskSalamanderSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    password: str | None = Field(None, title="Password")
-    packetSize: Any = Field(None, title="Packetsize")
+    password: Annotated[str | None, Field(title="Password")] = None
+    packetSize: Annotated[Any, Field(title="Packetsize")] = None
 
 
 class FinalMaskSudokuSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    password: str | None = Field(None, title="Password")
-    ascii: str | None = Field(None, title="Ascii")
-    customTable: str | None = Field(None, title="Customtable")
-    customTables: list[str] | None = Field(None, title="Customtables")
-    paddingMin: int | None = Field(None, title="Paddingmin")
-    paddingMax: int | None = Field(None, title="Paddingmax")
+    password: Annotated[str | None, Field(title="Password")] = None
+    ascii: Annotated[str | None, Field(title="Ascii")] = None
+    customTable: Annotated[str | None, Field(title="Customtable")] = None
+    customTables: Annotated[list[str] | None, Field(title="Customtables")] = None
+    paddingMin: Annotated[int | None, Field(title="Paddingmin")] = None
+    paddingMax: Annotated[int | None, Field(title="Paddingmax")] = None
 
 
 class FinalMaskTcpHeaderCustomSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    clients: list[list[FinalMaskNoiseItem]] | None = Field(None, title="Clients")
-    servers: list[list[FinalMaskNoiseItem]] | None = Field(None, title="Servers")
-    errors: list[list[FinalMaskNoiseItem]] | None = Field(None, title="Errors")
+    clients: Annotated[
+        list[list[FinalMaskNoiseItem]] | None, Field(title="Clients")
+    ] = None
+    servers: Annotated[
+        list[list[FinalMaskNoiseItem]] | None, Field(title="Servers")
+    ] = None
+    errors: Annotated[list[list[FinalMaskNoiseItem]] | None, Field(title="Errors")] = (
+        None
+    )
 
 
 class FinalMaskTcpType(StrEnum):
@@ -558,16 +497,16 @@ class FinalMaskUdpHeaderCustomSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    client: list[FinalMaskNoiseItem] | None = Field(None, title="Client")
-    server: list[FinalMaskNoiseItem] | None = Field(None, title="Server")
+    client: Annotated[list[FinalMaskNoiseItem] | None, Field(title="Client")] = None
+    server: Annotated[list[FinalMaskNoiseItem] | None, Field(title="Server")] = None
 
 
 class FinalMaskUdpHop(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    ports: str | None = Field(None, title="Ports")
-    interval: str | int | None = Field(None, title="Interval")
+    ports: Annotated[str | None, Field(title="Ports")] = None
+    interval: Annotated[str | int | None, Field(title="Interval")] = None
 
 
 class FinalMaskUdpType(StrEnum):
@@ -593,51 +532,59 @@ class FinalMaskXdnsSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    domains: list[str] | None = Field(None, title="Domains")
-    resolvers: list[str] | None = Field(None, title="Resolvers")
-    domain: str | None = Field(None, title="Domain")
+    domains: Annotated[list[str] | None, Field(title="Domains")] = None
+    resolvers: Annotated[list[str] | None, Field(title="Resolvers")] = None
+    domain: Annotated[str | None, Field(title="Domain")] = None
 
 
 class FinalMaskXicmpSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    dgram: bool | None = Field(None, title="Dgram")
-    ips: list[str] | None = Field(None, title="Ips")
-    listenIp: str | None = Field(None, title="Listenip")
-    id: int | None = Field(None, title="Id")
+    dgram: Annotated[bool | None, Field(title="Dgram")] = None
+    ips: Annotated[list[str] | None, Field(title="Ips")] = None
+    listenIp: Annotated[str | None, Field(title="Listenip")] = None
+    id: Annotated[int | None, Field(title="Id")] = None
 
 
 class FinalMaskXmcProfile(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    username: str = Field(..., title="Username")
-    uuid: str = Field(..., title="Uuid")
-    texturesValue: str = Field(..., title="Texturesvalue")
-    texturesSignature: str = Field(..., title="Texturessignature")
+    username: Annotated[str, Field(title="Username")]
+    uuid: Annotated[str, Field(title="Uuid")]
+    texturesValue: Annotated[str, Field(title="Texturesvalue")]
+    texturesSignature: Annotated[str, Field(title="Texturessignature")]
 
 
 class FinalMaskXmcSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    hostname: str | None = Field(None, title="Hostname")
-    password: str | None = Field(None, title="Password")
-    profiles: list[FinalMaskXmcProfile] | None = Field(None, title="Profiles")
-    usernames: list[str] | None = Field(None, title="Usernames")
+    hostname: Annotated[str | None, Field(title="Hostname")] = None
+    password: Annotated[str | None, Field(title="Password")] = None
+    profiles: Annotated[list[FinalMaskXmcProfile] | None, Field(title="Profiles")] = (
+        None
+    )
+    usernames: Annotated[list[str] | None, Field(title="Usernames")] = None
 
 
 class Forbidden(BaseModel):
-    detail: str | None = Field("You are not allowed to ...", title="Detail")
+    detail: Annotated[str | None, Field(title="Detail")] = "You are not allowed to ..."
 
 
 class GRPCSettings(BaseModel):
-    multi_mode: bool | None = Field(False, title="Multi Mode")
-    idle_timeout: int | None = Field(None, title="Idle Timeout")
-    health_check_timeout: int | None = Field(None, title="Health Check Timeout")
-    permit_without_stream: bool | None = Field(False, title="Permit Without Stream")
-    initial_windows_size: int | None = Field(None, title="Initial Windows Size")
+    multi_mode: Annotated[bool | None, Field(title="Multi Mode")] = False
+    idle_timeout: Annotated[int | None, Field(title="Idle Timeout")] = None
+    health_check_timeout: Annotated[int | None, Field(title="Health Check Timeout")] = (
+        None
+    )
+    permit_without_stream: Annotated[
+        bool | None, Field(title="Permit Without Stream")
+    ] = False
+    initial_windows_size: Annotated[int | None, Field(title="Initial Windows Size")] = (
+        None
+    )
 
 
 class GeoFilseRegion(StrEnum):
@@ -647,30 +594,30 @@ class GeoFilseRegion(StrEnum):
 
 
 class GeoIpInfo(BaseModel):
-    country: str | None = Field(None, title="Country")
-    city: str | None = Field(None, title="City")
-    lat: float | None = Field(None, title="Lat")
-    lon: float | None = Field(None, title="Lon")
+    country: Annotated[str | None, Field(title="Country")] = None
+    city: Annotated[str | None, Field(title="City")] = None
+    lat: Annotated[float | None, Field(title="Lat")] = None
+    lon: Annotated[float | None, Field(title="Lon")] = None
 
 
 class GroupCreate(BaseModel):
-    name: str = Field(..., max_length=64, min_length=3, title="Name")
-    inbound_tags: list[str] = Field(..., title="Inbound Tags")
-    is_disabled: bool | None = Field(False, title="Is Disabled")
+    name: Annotated[str, Field(max_length=64, min_length=3, title="Name")]
+    inbound_tags: Annotated[list[str], Field(title="Inbound Tags")]
+    is_disabled: Annotated[bool | None, Field(title="Is Disabled")] = False
 
 
 class GroupModify(BaseModel):
-    name: str = Field(..., max_length=64, min_length=3, title="Name")
-    inbound_tags: list[str] | None = Field([], title="Inbound Tags")
-    is_disabled: bool | None = Field(False, title="Is Disabled")
+    name: Annotated[str, Field(max_length=64, min_length=3, title="Name")]
+    inbound_tags: Annotated[list[str] | None, Field(title="Inbound Tags")] = []
+    is_disabled: Annotated[bool | None, Field(title="Is Disabled")] = False
 
 
 class GroupResponse(BaseModel):
-    name: str = Field(..., max_length=64, min_length=3, title="Name")
-    inbound_tags: list[str] | None = Field([], title="Inbound Tags")
-    is_disabled: bool | None = Field(False, title="Is Disabled")
-    id: int = Field(..., title="Id")
-    total_users: int | None = Field(0, title="Total Users")
+    name: Annotated[str, Field(max_length=64, min_length=3, title="Name")]
+    inbound_tags: Annotated[list[str] | None, Field(title="Inbound Tags")] = []
+    is_disabled: Annotated[bool | None, Field(title="Is Disabled")] = False
+    id: Annotated[int, Field(title="Id")]
+    total_users: Annotated[int | None, Field(title="Total Users")] = 0
 
 
 class GroupSimple(BaseModel):
@@ -678,13 +625,13 @@ class GroupSimple(BaseModel):
     Lightweight group model with only id and name for performance.
     """
 
-    id: int = Field(..., title="Id")
-    name: str = Field(..., title="Name")
+    id: Annotated[int, Field(title="Id")]
+    name: Annotated[str, Field(title="Name")]
 
 
 class GroupsResponse(BaseModel):
-    groups: list[GroupResponse] = Field(..., title="Groups")
-    total: int = Field(..., title="Total")
+    groups: Annotated[list[GroupResponse], Field(title="Groups")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class GroupsSimpleResponse(BaseModel):
@@ -692,37 +639,43 @@ class GroupsSimpleResponse(BaseModel):
     Response model for lightweight group list.
     """
 
-    groups: list[GroupSimple] = Field(..., title="Groups")
-    total: int = Field(..., title="Total")
+    groups: Annotated[list[GroupSimple], Field(title="Groups")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class HTTPException(BaseModel):
-    detail: str = Field(..., title="Detail")
+    detail: Annotated[str, Field(title="Detail")]
 
 
 class HTTPRequest(BaseModel):
-    version: str | None = Field(
-        "1.1", pattern="^(1(?:\\.0|\\.1)|2\\.0|3\\.0)$", title="Version"
-    )
-    headers: dict[str, list[str]] | None = Field(None, title="Headers")
-    method: str | None = Field(
-        "GET",
-        pattern="^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH|TRACE|CONNECT)$",
-        title="Method",
-    )
+    version: Annotated[
+        str | None, Field(pattern="^(1(?:\\.0|\\.1)|2\\.0|3\\.0)$", title="Version")
+    ] = "1.1"
+    headers: Annotated[dict[str, list[str]] | None, Field(title="Headers")] = None
+    method: Annotated[
+        str | None,
+        Field(
+            pattern="^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH|TRACE|CONNECT)$",
+            title="Method",
+        ),
+    ] = "GET"
 
 
 class HTTPResponse(BaseModel):
-    version: str | None = Field(
-        "1.1", pattern="^(1(?:\\.0|\\.1)|2\\.0|3\\.0)$", title="Version"
+    version: Annotated[
+        str | None, Field(pattern="^(1(?:\\.0|\\.1)|2\\.0|3\\.0)$", title="Version")
+    ] = "1.1"
+    headers: Annotated[dict[str, list[str]] | None, Field(title="Headers")] = None
+    status: Annotated[str | None, Field(pattern="^[1-5]\\d{2}$", title="Status")] = (
+        "200"
     )
-    headers: dict[str, list[str]] | None = Field(None, title="Headers")
-    status: str | None = Field("200", pattern="^[1-5]\\d{2}$", title="Status")
-    reason: str | None = Field(
-        "OK",
-        pattern="^(?i)(?:OK|Created|Accepted|Non-Authoritative Information|No Content|Reset Content|Partial Content|Multiple Choices|Moved Permanently|Found|See Other|Not Modified|Use Proxy|Temporary Redirect|Permanent Redirect|Bad Request|Unauthorized|Payment Required|Forbidden|Not Found|Method Not Allowed|Not Acceptable|Proxy Authentication Required|Request Timeout|Conflict|Gone|Length Required|Precondition Failed|Payload Too Large|URI Too Long|Unsupported Media Type|Range Not Satisfiable|Expectation Failed|I'm a teapot|Misdirected Request|Unprocessable Entity|Locked|Failed Dependency|Too Early|Upgrade Required|Precondition Required|Too Many Requests|Request Header Fields Too Large|Unavailable For Legal Reasons|Internal Server Error|Not Implemented|Bad Gateway|Service Unavailable|Gateway Timeout|HTTP Version Not Supported)$",
-        title="Reason",
-    )
+    reason: Annotated[
+        str | None,
+        Field(
+            pattern="^(?i)(?:OK|Created|Accepted|Non-Authoritative Information|No Content|Reset Content|Partial Content|Multiple Choices|Moved Permanently|Found|See Other|Not Modified|Use Proxy|Temporary Redirect|Permanent Redirect|Bad Request|Unauthorized|Payment Required|Forbidden|Not Found|Method Not Allowed|Not Acceptable|Proxy Authentication Required|Request float|Conflict|Gone|Length Required|Precondition Failed|Payload Too Large|URI Too Long|Unsupported Media str|Range Not Satisfiable|Expectation Failed|I'm a teapot|Misdirected Request|Unprocessable Entity|Locked|Failed Dependency|Too Early|Upgrade Required|Precondition Required|Too Many Requests|Request Header Fields Too Large|Unavailable For Legal Reasons|Internal Server Error|Not Implemented|Bad Gateway|Service Unavailable|Gateway float|HTTP Version Not Supported)$",
+            title="Reason",
+        ),
+    ] = "OK"
 
 
 class HWIDMode(StrEnum):
@@ -731,54 +684,44 @@ class HWIDMode(StrEnum):
     override = "override"
 
 
-class FallbackLimit(RootModel[int]):
-    root: int = Field(..., ge=0, title="Fallback Limit")
-
-
-class MinLimit(RootModel[int]):
-    root: int = Field(..., ge=0, title="Min Limit")
-
-
-class MaxLimit(RootModel[int]):
-    root: int = Field(..., ge=0, title="Max Limit")
-
-
 class HWIDSettings(BaseModel):
-    enabled: bool | None = Field(True, title="Enabled")
-    forced: bool | None = Field(False, title="Forced")
-    require_hwid_for_manual_sub: bool | None = Field(
-        False, title="Require Hwid For Manual Sub"
+    enabled: Annotated[bool | None, Field(title="Enabled")] = True
+    forced: Annotated[bool | None, Field(title="Forced")] = False
+    require_hwid_for_manual_sub: Annotated[
+        bool | None, Field(title="Require Hwid For Manual Sub")
+    ] = False
+    fallback_limit: Annotated[int | None, Field(title="Fallback Limit")] = (
+        None
     )
-    fallback_limit: FallbackLimit | None = Field(None, title="Fallback Limit")
-    min_limit: MinLimit | None = Field(None, title="Min Limit")
-    max_limit: MaxLimit | None = Field(None, title="Max Limit")
+    min_limit: Annotated[int | None, Field(title="Min Limit")] = None
+    max_limit: Annotated[int | None, Field(title="Max Limit")] = None
 
 
 class HostNotificationEnable(BaseModel):
-    create: bool | None = Field(True, title="Create")
-    modify: bool | None = Field(True, title="Modify")
-    delete: bool | None = Field(True, title="Delete")
-    modify_hosts: bool | None = Field(True, title="Modify Hosts")
+    create: Annotated[bool | None, Field(title="Create")] = True
+    modify: Annotated[bool | None, Field(title="Modify")] = True
+    delete: Annotated[bool | None, Field(title="Delete")] = True
+    modify_hosts: Annotated[bool | None, Field(title="Modify Hosts")] = True
 
 
 class HysteriaSettings(BaseModel):
-    auth: str | None = Field(None, min_length=1, title="Auth")
+    auth: Annotated[str | None, Field(min_length=1, title="Auth")] = None
 
 
 class InboundSummary(BaseModel):
-    tag: str = Field(..., title="Tag")
-    protocol: str = Field(..., title="Protocol")
-    network: str | None = Field(None, title="Network")
+    tag: Annotated[str, Field(title="Tag")]
+    protocol: Annotated[str, Field(title="Protocol")]
+    network: Annotated[str | None, Field(title="Network")] = None
 
 
 class KCPSettings(BaseModel):
-    mtu: int | None = Field(None, title="Mtu")
-    tti: int | None = Field(None, title="Tti")
-    uplink_capacity: int | None = Field(None, title="Uplink Capacity")
-    downlink_capacity: int | None = Field(None, title="Downlink Capacity")
-    congestion: bool | None = Field(None, title="Congestion")
-    read_buffer_size: int | None = Field(None, title="Read Buffer Size")
-    write_buffer_size: int | None = Field(None, title="Write Buffer Size")
+    mtu: Annotated[int | None, Field(title="Mtu")] = None
+    tti: Annotated[int | None, Field(title="Tti")] = None
+    uplink_capacity: Annotated[int | None, Field(title="Uplink Capacity")] = None
+    downlink_capacity: Annotated[int | None, Field(title="Downlink Capacity")] = None
+    congestion: Annotated[bool | None, Field(title="Congestion")] = None
+    read_buffer_size: Annotated[int | None, Field(title="Read Buffer Size")] = None
+    write_buffer_size: Annotated[int | None, Field(title="Write Buffer Size")] = None
 
 
 class Language(StrEnum):
@@ -789,20 +732,20 @@ class Language(StrEnum):
 
 
 class LiveRoutingRule(BaseModel):
-    outbound_tag: str = Field(..., title="Outbound Tag")
-    rule_tag: str = Field(..., title="Rule Tag")
+    outbound_tag: Annotated[str, Field(title="Outbound Tag")]
+    rule_tag: Annotated[str, Field(title="Rule Tag")]
 
 
 class LiveRoutingRuleAdd(BaseModel):
-    rule: dict[str, Any] = Field(..., title="Rule")
+    rule: Annotated[dict[str, Any], Field(title="Rule")]
     """
-    one Xray routing rule, same shape as routing.rules[]
+    one int routing rule, same shape as routing.rules[]
     """
-    should_reset: bool | None = Field(False, title="Should Reset")
+    should_reset: Annotated[bool | None, Field(title="Should Reset")] = False
 
 
 class LiveRoutingRules(BaseModel):
-    rules: list[LiveRoutingRule] = Field(..., title="Rules")
+    rules: Annotated[list[LiveRoutingRule], Field(title="Rules")]
 
 
 class MTProtoSettings(BaseModel):
@@ -810,14 +753,17 @@ class MTProtoSettings(BaseModel):
     Per-user MTProto secret: 16 random bytes as 32 hex characters.
     """
 
-    secret: str | None = Field(
-        None, max_length=32, min_length=32, pattern="^[0-9a-fA-F]{32}$", title="Secret"
-    )
+    secret: Annotated[
+        str | None,
+        Field(
+            max_length=32, min_length=32, pattern="^[0-9a-fA-F]{32}$", title="Secret"
+        ),
+    ] = None
 
 
 class ModifyUserByTemplate(BaseModel):
-    user_template_id: int = Field(..., title="User Template Id")
-    note: Note4 | None = Field(None, title="Note")
+    user_template_id: Annotated[int, Field(title="User Template Id")]
+    note: Annotated[str | None, Field(title="Note")] = None
 
 
 class MultiplexProtocol(StrEnum):
@@ -827,10 +773,12 @@ class MultiplexProtocol(StrEnum):
 
 
 class NextPlanModel(BaseModel):
-    user_template_id: int | None = Field(None, title="User Template Id")
-    data_limit: int | None = Field(None, title="Data Limit")
-    expire: int | None = Field(None, title="Expire")
-    add_remaining_traffic: bool | None = Field(False, title="Add Remaining Traffic")
+    user_template_id: Annotated[int | None, Field(title="User Template Id")] = None
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = None
+    expire: Annotated[int | None, Field(title="Expire")] = None
+    add_remaining_traffic: Annotated[
+        bool | None, Field(title="Add Remaining Traffic")
+    ] = False
 
 
 class NodeConnectionType(StrEnum):
@@ -839,98 +787,88 @@ class NodeConnectionType(StrEnum):
 
 
 class NodeCoreUpdate(BaseModel):
-    core_version: str | None = Field(
-        "latest",
-        examples=["v26.3.27"],
-        pattern="^(latest|[A-Za-z0-9][A-Za-z0-9./_-]{0,63})$",
-        title="Core Version",
-    )
-
-
-class ProxyUrl(RootModel[str]):
-    root: str = Field(..., max_length=256, title="Proxy Url")
+    core_version: Annotated[
+        str | None,
+        Field(
+            examples=["v26.3.27"],
+            pattern="^(latest|[A-Za-z0-9][A-Za-z0-9./_-]{0,63})$",
+            title="Core Version",
+        ),
+    ] = "latest"
 
 
 class NodeCreate(BaseModel):
-    name: str = Field(..., title="Name")
-    address: str = Field(..., title="Address")
-    port: int | None = Field(62050, title="Port")
-    api_port: int | None = Field(62051, title="Api Port")
-    usage_coefficient: float | None = Field(1.0, ge=0.0, title="Usage Coefficient")
+    name: Annotated[str, Field(title="Name")]
+    address: Annotated[str, Field(title="Address")]
+    port: Annotated[int | None, Field(title="Port")] = 62050
+    api_port: Annotated[int | None, Field(title="Api Port")] = 62051
+    usage_coefficient: Annotated[
+        float | None, Field(ge=0.0, title="Usage Coefficient")
+    ] = 1.0
     connection_type: NodeConnectionType
-    server_ca: str = Field(..., title="Server Ca")
-    keep_alive: int = Field(..., title="Keep Alive")
-    core_config_id: int = Field(..., title="Core Config Id")
-    api_key: str = Field(..., title="Api Key")
-    data_limit: int | None = Field(0, title="Data Limit")
+    server_ca: Annotated[str, Field(title="Server Ca")]
+    keep_alive: Annotated[int, Field(title="Keep Alive")]
+    core_config_id: Annotated[int, Field(title="Core Config Id")]
+    api_key: Annotated[str, Field(title="Api Key")]
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = 0
     data_limit_reset_strategy: DataLimitResetStrategy | None = "no_reset"
-    reset_time: int | None = Field(-1, title="Reset Time")
-    default_timeout: int | None = Field(10, ge=3, title="Default Timeout")
-    internal_timeout: int | None = Field(15, ge=3, le=60, title="Internal Timeout")
-    proxy_url: ProxyUrl | None = Field(None, title="Proxy Url")
+    reset_time: Annotated[int | None, Field(title="Reset Time")] = -1
+    default_timeout: Annotated[int | None, Field(ge=3, title="Default Timeout")] = 10
+    internal_timeout: Annotated[
+        int | None, Field(ge=3, le=60, title="Internal Timeout")
+    ] = 15
+    proxy_url: Annotated[str | None, Field(title="Proxy Url")] = None
 
 
 class NodeGeoFilesUpdate(BaseModel):
-    region: GeoFilseRegion | None = Field("iran", examples=["iran"])
-
-
-class UsageCoefficient(RootModel[float]):
-    root: float = Field(..., ge=0.0, title="Usage Coefficient")
-
-
-class DefaultTimeout(RootModel[int]):
-    root: int = Field(..., ge=3, title="Default Timeout")
-
-
-class InternalTimeout(RootModel[int]):
-    root: int = Field(..., ge=3, le=60, title="Internal Timeout")
+    region: Annotated[GeoFilseRegion | None, Field(examples=["iran"])] = "iran"
 
 
 class NodeNotificationEnable(BaseModel):
-    create: bool | None = Field(True, title="Create")
-    modify: bool | None = Field(True, title="Modify")
-    delete: bool | None = Field(True, title="Delete")
-    connect: bool | None = Field(True, title="Connect")
-    recovered: bool | None = Field(True, title="Recovered")
-    error: bool | None = Field(True, title="Error")
-    limited: bool | None = Field(True, title="Limited")
-    reset_usage: bool | None = Field(True, title="Reset Usage")
+    create: Annotated[bool | None, Field(title="Create")] = True
+    modify: Annotated[bool | None, Field(title="Modify")] = True
+    delete: Annotated[bool | None, Field(title="Delete")] = True
+    connect: Annotated[bool | None, Field(title="Connect")] = True
+    recovered: Annotated[bool | None, Field(title="Recovered")] = True
+    error: Annotated[bool | None, Field(title="Error")] = True
+    limited: Annotated[bool | None, Field(title="Limited")] = True
+    reset_usage: Annotated[bool | None, Field(title="Reset Usage")] = True
 
 
 class NodeOutboundLatency(BaseModel):
-    name: str = Field(..., title="Name")
-    alive: bool = Field(..., title="Alive")
-    delay: int = Field(..., title="Delay")
-    link: str = Field(..., title="Link")
-    last_seen_time: int = Field(..., title="Last Seen Time")
-    last_try_time: int = Field(..., title="Last Try Time")
-    source: str = Field(..., title="Source")
+    name: Annotated[str, Field(title="Name")]
+    alive: Annotated[bool, Field(title="Alive")]
+    delay: Annotated[int, Field(title="Delay")]
+    link: Annotated[str, Field(title="Link")]
+    last_seen_time: Annotated[int, Field(title="Last Seen Time")]
+    last_try_time: Annotated[int, Field(title="Last Try Time")]
+    source: Annotated[str, Field(title="Source")]
 
 
 class NodeOutboundsLatencyResponse(BaseModel):
-    latencies: list[NodeOutboundLatency] = Field(..., title="Latencies")
+    latencies: Annotated[list[NodeOutboundLatency], Field(title="Latencies")]
 
 
 class NodeRealtimeStats(BaseModel):
-    mem_total: int = Field(..., title="Mem Total")
-    mem_used: int = Field(..., title="Mem Used")
-    cpu_cores: int = Field(..., title="Cpu Cores")
-    cpu_usage: float = Field(..., title="Cpu Usage")
-    incoming_bandwidth_speed: int = Field(..., title="Incoming Bandwidth Speed")
-    outgoing_bandwidth_speed: int = Field(..., title="Outgoing Bandwidth Speed")
-    uptime: int = Field(..., title="Uptime")
+    mem_total: Annotated[int, Field(title="Mem Total")]
+    mem_used: Annotated[int, Field(title="Mem Used")]
+    cpu_cores: Annotated[int, Field(title="Cpu Cores")]
+    cpu_usage: Annotated[float, Field(title="Cpu Usage")]
+    incoming_bandwidth_speed: Annotated[int, Field(title="Incoming Bandwidth Speed")]
+    outgoing_bandwidth_speed: Annotated[int, Field(title="Outgoing Bandwidth Speed")]
+    uptime: Annotated[int, Field(title="Uptime")]
 
 
 class NodeSettings(BaseModel):
-    min_node_version: str | None = Field("v1.0.0", title="Min Node Version")
+    min_node_version: Annotated[str | None, Field(title="Min Node Version")] = "v1.0.0"
 
 
 class NodeStats(BaseModel):
-    period_start: AwareDatetime = Field(..., title="Period Start")
-    mem_usage_percentage: float = Field(..., title="Mem Usage Percentage")
-    cpu_usage_percentage: float = Field(..., title="Cpu Usage Percentage")
-    incoming_bandwidth_speed: float = Field(..., title="Incoming Bandwidth Speed")
-    outgoing_bandwidth_speed: float = Field(..., title="Outgoing Bandwidth Speed")
+    period_start: Annotated[AwareDatetime, Field(title="Period Start")]
+    mem_usage_percentage: Annotated[float, Field(title="Mem Usage Percentage")]
+    cpu_usage_percentage: Annotated[float, Field(title="Cpu Usage Percentage")]
+    incoming_bandwidth_speed: Annotated[float, Field(title="Incoming Bandwidth Speed")]
+    outgoing_bandwidth_speed: Annotated[float, Field(title="Outgoing Bandwidth Speed")]
 
 
 class NodeStatus(StrEnum):
@@ -942,9 +880,9 @@ class NodeStatus(StrEnum):
 
 
 class NodeUsageStat(BaseModel):
-    period_start: AwareDatetime = Field(..., title="Period Start")
-    uplink: int = Field(..., title="Uplink")
-    downlink: int = Field(..., title="Downlink")
+    period_start: Annotated[AwareDatetime, Field(title="Period Start")]
+    uplink: Annotated[int, Field(title="Uplink")]
+    downlink: Annotated[int, Field(title="Downlink")]
 
 
 class NodesOnlineCounts(BaseModel):
@@ -952,12 +890,12 @@ class NodesOnlineCounts(BaseModel):
     Online users per node id and when the panel last polled the nodes.
     """
 
-    counts: dict[str, int] = Field(..., title="Counts")
-    at: AwareDatetime | None = Field(None, title="At")
+    counts: Annotated[dict[str, int], Field(title="Counts")]
+    at: Annotated[AwareDatetime | None, Field(title="At")] = None
 
 
 class NotFound(BaseModel):
-    detail: str | None = Field("Entity {} not found", title="Detail")
+    detail: Annotated[str | None, Field(title="Detail")] = "Entity {} not found"
 
 
 class NotificationChannel(BaseModel):
@@ -965,9 +903,11 @@ class NotificationChannel(BaseModel):
     Channel configuration for sending notifications to a specific entity
     """
 
-    telegram_chat_id: int | None = Field(None, title="Telegram Chat Id")
-    telegram_topic_id: int | None = Field(None, title="Telegram Topic Id")
-    discord_webhook_url: str | None = Field(None, title="Discord Webhook Url")
+    telegram_chat_id: Annotated[int | None, Field(title="Telegram Chat Id")] = None
+    telegram_topic_id: Annotated[int | None, Field(title="Telegram Topic Id")] = None
+    discord_webhook_url: Annotated[str | None, Field(title="Discord Webhook Url")] = (
+        None
+    )
 
 
 class NotificationChannels(BaseModel):
@@ -987,15 +927,17 @@ class NotificationChannels(BaseModel):
 
 
 class NotificationSettings(BaseModel):
-    notify_telegram: bool | None = Field(False, title="Notify Telegram")
-    notify_discord: bool | None = Field(False, title="Notify Discord")
-    telegram_api_token: str | None = Field(None, title="Telegram Api Token")
-    telegram_chat_id: int | None = Field(None, title="Telegram Chat Id")
-    telegram_topic_id: int | None = Field(None, title="Telegram Topic Id")
-    discord_webhook_url: str | None = Field(None, title="Discord Webhook Url")
+    notify_telegram: Annotated[bool | None, Field(title="Notify Telegram")] = False
+    notify_discord: Annotated[bool | None, Field(title="Notify Discord")] = False
+    telegram_api_token: Annotated[str | None, Field(title="Telegram Api Token")] = None
+    telegram_chat_id: Annotated[int | None, Field(title="Telegram Chat Id")] = None
+    telegram_topic_id: Annotated[int | None, Field(title="Telegram Topic Id")] = None
+    discord_webhook_url: Annotated[str | None, Field(title="Discord Webhook Url")] = (
+        None
+    )
     channels: NotificationChannels | None = None
-    proxy_url: str | None = Field(None, title="Proxy Url")
-    max_retries: int = Field(..., gt=1, title="Max Retries")
+    proxy_url: Annotated[str | None, Field(title="Proxy Url")] = None
+    max_retries: Annotated[int, Field(gt=1, title="Max Retries")]
 
 
 class OpenVPNSettings(BaseModel):
@@ -1003,42 +945,43 @@ class OpenVPNSettings(BaseModel):
     Per-user OpenVPN login: a short random username and a password.
     """
 
-    username: str | None = Field(
-        None,
-        max_length=64,
-        min_length=3,
-        pattern="^[A-Za-z0-9_.@-]+$",
-        title="Username",
-    )
-    password: str | None = Field(None, max_length=128, min_length=8, title="Password")
+    username: Annotated[
+        str | None,
+        Field(
+            max_length=64, min_length=3, pattern="^[A-Za-z0-9_.@-]+$", title="Username"
+        ),
+    ] = None
+    password: Annotated[
+        str | None, Field(max_length=128, min_length=8, title="Password")
+    ] = None
 
 
 class OutboundProbePoint(BaseModel):
-    at: AwareDatetime = Field(..., title="At")
-    alive: bool = Field(..., title="Alive")
-    delay: int = Field(..., title="Delay")
+    at: Annotated[AwareDatetime, Field(title="At")]
+    alive: Annotated[bool, Field(title="Alive")]
+    delay: Annotated[int, Field(title="Delay")]
 
 
 class OutboundTrafficPoint(BaseModel):
-    period_start: AwareDatetime = Field(..., title="Period Start")
-    uplink: int = Field(..., title="Uplink")
-    downlink: int = Field(..., title="Downlink")
+    period_start: Annotated[AwareDatetime, Field(title="Period Start")]
+    uplink: Annotated[int, Field(title="Uplink")]
+    downlink: Annotated[int, Field(title="Downlink")]
 
 
 class OwnerCreateRequest(BaseModel):
-    key: str = Field(..., title="Key")
-    password: str = Field(..., title="Password")
-    username: str = Field(..., title="Username")
+    key: Annotated[str, Field(title="Key")]
+    password: Annotated[str, Field(title="Password")]
+    username: Annotated[str, Field(title="Username")]
 
 
 class OwnerResetRequest(BaseModel):
-    key: str = Field(..., title="Key")
-    password: str = Field(..., title="Password")
+    key: Annotated[str, Field(title="Key")]
+    password: Annotated[str, Field(title="Password")]
 
 
 class OwnerUpgradeRequest(BaseModel):
-    key: str = Field(..., title="Key")
-    username: str = Field(..., title="Username")
+    key: Annotated[str, Field(title="Key")]
+    username: Annotated[str, Field(title="Username")]
 
 
 class Period(StrEnum):
@@ -1096,61 +1039,54 @@ class ProxyHostSecurity(StrEnum):
     tls = "tls"
 
 
-class Timeout(RootModel[float]):
-    root: float = Field(..., ge=1.0, le=20.0, title="Timeout")
-    """
-    Per-probe timeout in seconds (1-20, default 10)
-    """
-
-
 class RealityScanRequest(BaseModel):
-    target: str = Field(..., max_length=253, min_length=1, title="Target")
+    target: Annotated[str, Field(max_length=253, min_length=1, title="Target")]
     """
     host or host:port to probe (port defaults to 443)
     """
-    timeout: Timeout | None = Field(None, title="Timeout")
+    timeout: Annotated[float | None, Field(title="Timeout")] = None
     """
     Per-probe timeout in seconds (1-20, default 10)
     """
 
 
 class RealityScanResult(BaseModel):
-    target: str = Field(..., title="Target")
-    host: str = Field(..., title="Host")
-    ip: str | None = Field(None, title="Ip")
-    port: int = Field(..., title="Port")
-    sni: str | None = Field(None, title="Sni")
-    sni_discovered: bool | None = Field(False, title="Sni Discovered")
-    feasible: bool = Field(..., title="Feasible")
-    tls13: bool = Field(..., title="Tls13")
-    tls_version: str | None = Field(None, title="Tls Version")
-    h2: bool = Field(..., title="H2")
-    alpn: str | None = Field(None, title="Alpn")
-    x25519: bool | None = Field(None, title="X25519")
-    post_quantum: bool | None = Field(None, title="Post Quantum")
-    curve: str | None = Field(None, title="Curve")
-    h3: bool | None = Field(False, title="H3")
-    cert_valid: bool = Field(..., title="Cert Valid")
-    cert_subject: str | None = Field(None, title="Cert Subject")
-    cert_issuer: str | None = Field(None, title="Cert Issuer")
-    not_after: str | None = Field(None, title="Not After")
-    server_names: list[str] | None = Field(None, title="Server Names")
-    latency_ms: int | None = Field(None, title="Latency Ms")
-    reason: str | None = Field(None, title="Reason")
+    target: Annotated[str, Field(title="Target")]
+    host: Annotated[str, Field(title="Host")]
+    ip: Annotated[str | None, Field(title="Ip")] = None
+    port: Annotated[int, Field(title="Port")]
+    sni: Annotated[str | None, Field(title="Sni")] = None
+    sni_discovered: Annotated[bool | None, Field(title="Sni Discovered")] = False
+    feasible: Annotated[bool, Field(title="Feasible")]
+    tls13: Annotated[bool, Field(title="Tls13")]
+    tls_version: Annotated[str | None, Field(title="Tls Version")] = None
+    h2: Annotated[bool, Field(title="H2")]
+    alpn: Annotated[str | None, Field(title="Alpn")] = None
+    x25519: Annotated[bool | None, Field(title="X25519")] = None
+    post_quantum: Annotated[bool | None, Field(title="Post Quantum")] = None
+    curve: Annotated[str | None, Field(title="Curve")] = None
+    h3: Annotated[bool | None, Field(title="H3")] = False
+    cert_valid: Annotated[bool, Field(title="Cert Valid")]
+    cert_subject: Annotated[str | None, Field(title="Cert Subject")] = None
+    cert_issuer: Annotated[str | None, Field(title="Cert Issuer")] = None
+    not_after: Annotated[str | None, Field(title="Not After")] = None
+    server_names: Annotated[list[str] | None, Field(title="Server Names")] = None
+    latency_ms: Annotated[int | None, Field(title="Latency Ms")] = None
+    reason: Annotated[str | None, Field(title="Reason")] = None
 
 
 class RecentEvent(BaseModel):
-    id: int = Field(..., title="Id")
-    at: AwareDatetime = Field(..., title="At")
-    kind: str = Field(..., title="Kind")
-    by: str | None = Field(None, title="By")
-    detail: dict[str, Any] | None = Field(None, title="Detail")
-    user_id: int = Field(..., title="User Id")
-    username: str = Field(..., title="Username")
+    id: Annotated[int, Field(title="Id")]
+    at: Annotated[AwareDatetime, Field(title="At")]
+    kind: Annotated[str, Field(title="Kind")]
+    by: Annotated[str | None, Field(title="By")] = None
+    detail: Annotated[dict[str, Any] | None, Field(title="Detail")] = None
+    user_id: Annotated[int, Field(title="User Id")]
+    username: Annotated[str, Field(title="Username")]
 
 
 class RecentEventList(BaseModel):
-    events: list[RecentEvent] = Field(..., title="Events")
+    events: Annotated[list[RecentEvent], Field(title="Events")]
 
 
 class RemoveAPIKeysResponse(BaseModel):
@@ -1158,8 +1094,8 @@ class RemoveAPIKeysResponse(BaseModel):
     Response model for bulk API key deletion.
     """
 
-    api_keys: list[str] = Field(..., title="Api Keys")
-    count: int = Field(..., title="Count")
+    api_keys: Annotated[list[str], Field(title="Api Keys")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class RemoveAdminsResponse(BaseModel):
@@ -1167,8 +1103,8 @@ class RemoveAdminsResponse(BaseModel):
     Response model for bulk admin deletion
     """
 
-    admins: list[str] = Field(..., title="Admins")
-    count: int = Field(..., title="Count")
+    admins: Annotated[list[str], Field(title="Admins")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class RemoveClientTemplatesResponse(BaseModel):
@@ -1176,8 +1112,8 @@ class RemoveClientTemplatesResponse(BaseModel):
     Response model for bulk client template deletion
     """
 
-    templates: list[str] = Field(..., title="Templates")
-    count: int = Field(..., title="Count")
+    templates: Annotated[list[str], Field(title="Templates")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class RemoveCoresResponse(BaseModel):
@@ -1185,8 +1121,8 @@ class RemoveCoresResponse(BaseModel):
     Response model for bulk core deletion
     """
 
-    cores: list[str] = Field(..., title="Cores")
-    count: int = Field(..., title="Count")
+    cores: Annotated[list[str], Field(title="Cores")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class RemoveGroupsResponse(BaseModel):
@@ -1194,8 +1130,8 @@ class RemoveGroupsResponse(BaseModel):
     Response model for bulk group deletion
     """
 
-    groups: list[str] = Field(..., title="Groups")
-    count: int = Field(..., title="Count")
+    groups: Annotated[list[str], Field(title="Groups")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class RemoveHostsResponse(BaseModel):
@@ -1203,8 +1139,8 @@ class RemoveHostsResponse(BaseModel):
     Response model for bulk host deletion
     """
 
-    hosts: list[str] = Field(..., title="Hosts")
-    count: int = Field(..., title="Count")
+    hosts: Annotated[list[str], Field(title="Hosts")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class RemoveNodesResponse(BaseModel):
@@ -1212,8 +1148,8 @@ class RemoveNodesResponse(BaseModel):
     Response model for bulk node deletion
     """
 
-    nodes: list[str] = Field(..., title="Nodes")
-    count: int = Field(..., title="Count")
+    nodes: Annotated[list[str], Field(title="Nodes")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class RemoveUserTemplatesResponse(BaseModel):
@@ -1221,70 +1157,86 @@ class RemoveUserTemplatesResponse(BaseModel):
     Response model for bulk user template deletion
     """
 
-    templates: list[str] = Field(..., title="Templates")
-    count: int = Field(..., title="Count")
+    templates: Annotated[list[str], Field(title="Templates")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class RemoveUsersResponse(BaseModel):
-    users: list[str] = Field(..., title="Users")
-    count: int = Field(..., title="Count")
+    users: Annotated[list[str], Field(title="Users")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class RoleAccess(BaseModel):
-    require_template: bool | None = Field(False, title="Require Template")
-    allowed_template_ids: list[int] | None = Field(None, title="Allowed Template Ids")
-    allowed_group_ids: list[int] | None = Field(None, title="Allowed Group Ids")
+    require_template: Annotated[bool | None, Field(title="Require Template")] = False
+    allowed_template_ids: Annotated[
+        list[int] | None, Field(title="Allowed Template Ids")
+    ] = None
+    allowed_group_ids: Annotated[list[int] | None, Field(title="Allowed Group Ids")] = (
+        None
+    )
 
 
 class RoleFeatures(BaseModel):
-    can_use_reset_strategy: bool | None = Field(True, title="Can Use Reset Strategy")
-    can_use_next_plan: bool | None = Field(True, title="Can Use Next Plan")
+    can_use_reset_strategy: Annotated[
+        bool | None, Field(title="Can Use Reset Strategy")
+    ] = True
+    can_use_next_plan: Annotated[bool | None, Field(title="Can Use Next Plan")] = True
 
 
 class RoleHWIDSettings(BaseModel):
-    enabled: bool | None = Field(True, title="Enabled")
-    forced: bool | None = Field(False, title="Forced")
-    require_hwid_for_manual_sub: bool | None = Field(
-        False, title="Require Hwid For Manual Sub"
+    enabled: Annotated[bool | None, Field(title="Enabled")] = True
+    forced: Annotated[bool | None, Field(title="Forced")] = False
+    require_hwid_for_manual_sub: Annotated[
+        bool | None, Field(title="Require Hwid For Manual Sub")
+    ] = False
+    fallback_limit: Annotated[int | None, Field(title="Fallback Limit")] = (
+        None
     )
-    fallback_limit: FallbackLimit | None = Field(None, title="Fallback Limit")
-    min_limit: MinLimit | None = Field(None, title="Min Limit")
-    max_limit: MaxLimit | None = Field(None, title="Max Limit")
+    min_limit: Annotated[int | None, Field(title="Min Limit")] = None
+    max_limit: Annotated[int | None, Field(title="Max Limit")] = None
     mode: HWIDMode | None = "use_global"
 
 
 class RoleLimits(BaseModel):
-    max_users: int | None = Field(None, title="Max Users")
-    data_limit_min: int | None = Field(None, title="Data Limit Min")
-    data_limit_max: int | None = Field(None, title="Data Limit Max")
-    expire_min: int | None = Field(None, title="Expire Min")
-    expire_max: int | None = Field(None, title="Expire Max")
-    min_hwid_per_user: int | None = Field(None, title="Min Hwid Per User")
-    max_hwid_per_user: int | None = Field(None, title="Max Hwid Per User")
-    on_hold_timeout_min: int | None = Field(None, title="On Hold Timeout Min")
-    on_hold_timeout_max: int | None = Field(None, title="On Hold Timeout Max")
+    max_users: Annotated[int | None, Field(title="Max Users")] = None
+    data_limit_min: Annotated[int | None, Field(title="Data Limit Min")] = None
+    data_limit_max: Annotated[int | None, Field(title="Data Limit Max")] = None
+    expire_min: Annotated[int | None, Field(title="Expire Min")] = None
+    expire_max: Annotated[int | None, Field(title="Expire Max")] = None
+    min_hwid_per_user: Annotated[int | None, Field(title="Min Hwid Per User")] = None
+    max_hwid_per_user: Annotated[int | None, Field(title="Max Hwid Per User")] = None
+    on_hold_timeout_min: Annotated[int | None, Field(title="On Hold float Min")] = (
+        None
+    )
+    on_hold_timeout_max: Annotated[int | None, Field(title="On Hold float Max")] = (
+        None
+    )
 
 
 class RouteTestRequest(BaseModel):
-    inbound_tag: str | None = Field("", title="Inbound Tag")
-    network: str | None = Field("tcp", pattern="^(tcp|udp)$", title="Network")
-    target_ip: str | None = Field("", title="Target Ip")
-    target_domain: str | None = Field("", title="Target Domain")
-    target_port: int | None = Field(443, ge=0, le=65535, title="Target Port")
-    protocol: str | None = Field("", title="Protocol")
-    user: str | None = Field("", title="User")
+    inbound_tag: Annotated[str | None, Field(title="Inbound Tag")] = ""
+    network: Annotated[str | None, Field(pattern="^(tcp|udp)$", title="Network")] = (
+        "tcp"
+    )
+    target_ip: Annotated[str | None, Field(title="Target Ip")] = ""
+    target_domain: Annotated[str | None, Field(title="Target Domain")] = ""
+    target_port: Annotated[int | None, Field(ge=0, le=65535, title="Target Port")] = 443
+    protocol: Annotated[str | None, Field(title="Protocol")] = ""
+    user: Annotated[str | None, Field(title="User")] = ""
     """
     user email as the engine sees it (the user id)
     """
 
 
 class RouteTestResult(BaseModel):
-    outbound_tag: str = Field(..., title="Outbound Tag")
-    outbound_group_tags: list[str] | None = Field([], title="Outbound Group Tags")
-    inbound_tag: str | None = Field("", title="Inbound Tag")
-    network: str | None = Field("", title="Network")
-    target_domain: str | None = Field("", title="Target Domain")
-    is_default: bool | None = Field(False, title="Is Default")
+    outbound_tag: Annotated[str, Field(title="Outbound Tag")]
+    outbound_group_tags: Annotated[
+        list[str] | None, Field(title="Outbound Group Tags")
+    ] = []
+    inbound_tag: Annotated[str | None, Field(title="Inbound Tag")] = ""
+    network: Annotated[str | None, Field(title="Network")] = ""
+    target_domain: Annotated[str | None, Field(title="Target Domain")] = ""
+    is_default: Annotated[bool | None, Field(title="Is Default")] = False
 
 
 class RunMethod(StrEnum):
@@ -1296,11 +1248,15 @@ class SettingsPermissions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    read: bool | dict[str, PermissionScope | int] | None = Field(None, title="Read")
-    read_general: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Read General"
-    )
-    update: bool | dict[str, PermissionScope | int] | None = Field(None, title="Update")
+    read: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read")
+    ] = None
+    read_general: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read General")
+    ] = None
+    update: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Update")
+    ] = None
 
 
 class ShadowsocksMethods(StrEnum):
@@ -1311,193 +1267,185 @@ class ShadowsocksMethods(StrEnum):
 
 
 class ShadowsocksSettings(BaseModel):
-    password: str | None = Field(None, min_length=22, title="Password")
+    password: Annotated[str | None, Field(min_length=22, title="Password")] = None
     method: ShadowsocksMethods | None = "chacha20-ietf-poly1305"
 
 
 class SingBoxFragmentSettings(BaseModel):
-    fragment: bool | None = Field(False, title="Fragment")
-    fragment_fallback_delay: str | None = Field(
-        "", pattern="^$|^\\d+ms$", title="Fragment Fallback Delay"
-    )
-    record_fragment: bool | None = Field(False, title="Record Fragment")
+    fragment: Annotated[bool | None, Field(title="Fragment")] = False
+    fragment_fallback_delay: Annotated[
+        str | None, Field(pattern="^$|^\\d+ms$", title="Fragment Fallback Delay")
+    ] = ""
+    record_fragment: Annotated[bool | None, Field(title="Record Fragment")] = False
 
 
 class SingBoxMuxSettings(BaseModel):
-    enable: bool | None = Field(False, title="Enable")
+    enable: Annotated[bool | None, Field(title="Enable")] = False
     protocol: MultiplexProtocol | None = "smux"
-    max_connections: int | None = Field(None, title="Max Connections")
-    max_streams: int | None = Field(None, title="Max Streams")
-    min_streams: int | None = Field(None, title="Min Streams")
-    padding: bool | None = Field(False, title="Padding")
+    max_connections: Annotated[int | None, Field(title="Max Connections")] = None
+    max_streams: Annotated[int | None, Field(title="Max Streams")] = None
+    min_streams: Annotated[int | None, Field(title="Min Streams")] = None
+    padding: Annotated[bool | None, Field(title="Padding")] = False
     brutal: Brutal | None = None
 
 
 class SubFormatEnable(BaseModel):
-    links: bool | None = Field(True, title="Links")
-    links_base64: bool | None = Field(True, title="Links Base64")
-    xray: bool | None = Field(True, title="Xray")
-    wireguard: bool | None = Field(True, title="Wireguard")
-    openvpn: bool | None = Field(True, title="Openvpn")
-    sing_box: bool | None = Field(True, title="Sing Box")
-    clash: bool | None = Field(True, title="Clash")
-    clash_meta: bool | None = Field(True, title="Clash Meta")
-    outline: bool | None = Field(True, title="Outline")
+    links: Annotated[bool | None, Field(title="Links")] = True
+    links_base64: Annotated[bool | None, Field(title="Links Base64")] = True
+    xray: Annotated[bool | None, Field(title="Xray")] = True
+    wireguard: Annotated[bool | None, Field(title="Wireguard")] = True
+    openvpn: Annotated[bool | None, Field(title="Openvpn")] = True
+    sing_box: Annotated[bool | None, Field(title="Sing Box")] = True
+    clash: Annotated[bool | None, Field(title="Clash")] = True
+    clash_meta: Annotated[bool | None, Field(title="Clash Meta")] = True
+    outline: Annotated[bool | None, Field(title="Outline")] = True
 
 
 class SubRule(BaseModel):
-    pattern: str = Field(..., title="Pattern")
+    pattern: Annotated[str, Field(title="Pattern")]
     target: ConfigFormat
-    response_headers: dict[str, Any] | None = Field(None, title="Response Headers")
-
-
-class Xray(RootModel[int]):
-    root: int = Field(..., ge=1, title="Xray")
+    response_headers: Annotated[
+        dict[str, Any] | None, Field(title="Response Headers")
+    ] = None
 
 
 class SubscriptionTemplates(BaseModel):
-    xray: Xray | None = Field(None, title="Xray")
-
-
-class DataLimit(RootModel[int]):
-    root: int = Field(..., ge=0, title="Data Limit")
-    """
-    data_limit can be 0 or greater
-    """
-
-
-class OnHoldExpireDuration(RootModel[int]):
-    root: int = Field(..., ge=0, le=2147483647, title="On Hold Expire Duration")
-    """
-    on_hold_expire_duration can be 0 or greater in seconds
-    """
-
-
-class DeviceLimit(RootModel[int]):
-    root: int = Field(..., ge=0, title="Device Limit")
+    xray: Annotated[int | None, Field(title="Xray")] = None
 
 
 class SuspiciousUser(BaseModel):
-    user_id: int = Field(..., title="User Id")
-    username: str = Field(..., title="Username")
-    ips: int = Field(..., title="Ips")
-    countries: int = Field(..., title="Countries")
-    nodes: int = Field(..., title="Nodes")
-    last_seen: AwareDatetime = Field(..., title="Last Seen")
+    user_id: Annotated[int, Field(title="User Id")]
+    username: Annotated[str, Field(title="Username")]
+    ips: Annotated[int, Field(title="Ips")]
+    countries: Annotated[int, Field(title="Countries")]
+    nodes: Annotated[int, Field(title="Nodes")]
+    last_seen: Annotated[AwareDatetime, Field(title="Last Seen")]
 
 
 class SuspiciousUsersList(BaseModel):
-    days: int = Field(..., title="Days")
-    max_ips: int = Field(..., title="Max Ips")
-    max_countries: int = Field(..., title="Max Countries")
-    users: list[SuspiciousUser] = Field(..., title="Users")
+    days: Annotated[int, Field(title="Days")]
+    max_ips: Annotated[int, Field(title="Max Ips")]
+    max_countries: Annotated[int, Field(title="Max Countries")]
+    users: Annotated[list[SuspiciousUser], Field(title="Users")]
 
 
 class SystemPermissions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    read: bool | dict[str, PermissionScope | int] | None = Field(None, title="Read")
+    read: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read")
+    ] = None
 
 
 class SystemResourceStats(BaseModel):
-    version: str = Field(..., title="Version")
-    uptime_seconds: int = Field(..., title="Uptime Seconds")
-    mem_total: int | None = Field(None, title="Mem Total")
-    mem_used: int | None = Field(None, title="Mem Used")
-    disk_total: int | None = Field(None, title="Disk Total")
-    disk_used: int | None = Field(None, title="Disk Used")
-    cpu_cores: int | None = Field(None, title="Cpu Cores")
-    cpu_usage: float | None = Field(None, title="Cpu Usage")
-    incoming_bandwidth_speed: int | None = Field(0, title="Incoming Bandwidth Speed")
-    outgoing_bandwidth_speed: int | None = Field(0, title="Outgoing Bandwidth Speed")
+    version: Annotated[str, Field(title="Version")]
+    uptime_seconds: Annotated[int, Field(title="Uptime Seconds")]
+    mem_total: Annotated[int | None, Field(title="Mem Total")] = None
+    mem_used: Annotated[int | None, Field(title="Mem Used")] = None
+    disk_total: Annotated[int | None, Field(title="Disk Total")] = None
+    disk_used: Annotated[int | None, Field(title="Disk Used")] = None
+    cpu_cores: Annotated[int | None, Field(title="Cpu Cores")] = None
+    cpu_usage: Annotated[float | None, Field(title="Cpu Usage")] = None
+    incoming_bandwidth_speed: Annotated[
+        int | None, Field(title="Incoming Bandwidth Speed")
+    ] = 0
+    outgoing_bandwidth_speed: Annotated[
+        int | None, Field(title="Outgoing Bandwidth Speed")
+    ] = 0
 
 
 class SystemStats(BaseModel):
-    total_user: int = Field(..., title="Total User")
-    online_users: int = Field(..., title="Online Users")
-    active_users: int = Field(..., title="Active Users")
-    on_hold_users: int = Field(..., title="On Hold Users")
-    disabled_users: int = Field(..., title="Disabled Users")
-    expired_users: int = Field(..., title="Expired Users")
-    limited_users: int = Field(..., title="Limited Users")
-    incoming_bandwidth: int = Field(..., title="Incoming Bandwidth")
-    outgoing_bandwidth: int = Field(..., title="Outgoing Bandwidth")
-    version: str = Field(..., title="Version")
-    uptime_seconds: int = Field(..., title="Uptime Seconds")
-    mem_total: int | None = Field(None, title="Mem Total")
-    mem_used: int | None = Field(None, title="Mem Used")
-    disk_total: int | None = Field(None, title="Disk Total")
-    disk_used: int | None = Field(None, title="Disk Used")
-    cpu_cores: int | None = Field(None, title="Cpu Cores")
-    cpu_usage: float | None = Field(None, title="Cpu Usage")
-    incoming_bandwidth_speed: int | None = Field(0, title="Incoming Bandwidth Speed")
-    outgoing_bandwidth_speed: int | None = Field(0, title="Outgoing Bandwidth Speed")
+    total_user: Annotated[int, Field(title="Total User")]
+    online_users: Annotated[int, Field(title="Online Users")]
+    active_users: Annotated[int, Field(title="Active Users")]
+    on_hold_users: Annotated[int, Field(title="On Hold Users")]
+    disabled_users: Annotated[int, Field(title="Disabled Users")]
+    expired_users: Annotated[int, Field(title="Expired Users")]
+    limited_users: Annotated[int, Field(title="Limited Users")]
+    incoming_bandwidth: Annotated[int, Field(title="Incoming Bandwidth")]
+    outgoing_bandwidth: Annotated[int, Field(title="Outgoing Bandwidth")]
+    version: Annotated[str, Field(title="Version")]
+    uptime_seconds: Annotated[int, Field(title="Uptime Seconds")]
+    mem_total: Annotated[int | None, Field(title="Mem Total")] = None
+    mem_used: Annotated[int | None, Field(title="Mem Used")] = None
+    disk_total: Annotated[int | None, Field(title="Disk Total")] = None
+    disk_used: Annotated[int | None, Field(title="Disk Used")] = None
+    cpu_cores: Annotated[int | None, Field(title="Cpu Cores")] = None
+    cpu_usage: Annotated[float | None, Field(title="Cpu Usage")] = None
+    incoming_bandwidth_speed: Annotated[
+        int | None, Field(title="Incoming Bandwidth Speed")
+    ] = 0
+    outgoing_bandwidth_speed: Annotated[
+        int | None, Field(title="Outgoing Bandwidth Speed")
+    ] = 0
 
 
 class SystemUsersStats(BaseModel):
-    total_user: int = Field(..., title="Total User")
-    online_users: int = Field(..., title="Online Users")
-    active_users: int = Field(..., title="Active Users")
-    on_hold_users: int = Field(..., title="On Hold Users")
-    disabled_users: int = Field(..., title="Disabled Users")
-    expired_users: int = Field(..., title="Expired Users")
-    limited_users: int = Field(..., title="Limited Users")
-    incoming_bandwidth: int = Field(..., title="Incoming Bandwidth")
-    outgoing_bandwidth: int = Field(..., title="Outgoing Bandwidth")
+    total_user: Annotated[int, Field(title="Total User")]
+    online_users: Annotated[int, Field(title="Online Users")]
+    active_users: Annotated[int, Field(title="Active Users")]
+    on_hold_users: Annotated[int, Field(title="On Hold Users")]
+    disabled_users: Annotated[int, Field(title="Disabled Users")]
+    expired_users: Annotated[int, Field(title="Expired Users")]
+    limited_users: Annotated[int, Field(title="Limited Users")]
+    incoming_bandwidth: Annotated[int, Field(title="Incoming Bandwidth")]
+    outgoing_bandwidth: Annotated[int, Field(title="Outgoing Bandwidth")]
 
 
 class TcpSettings(BaseModel):
-    header: str | None = Field("none", pattern="^(?:|none|http)$", title="Header")
+    header: Annotated[str | None, Field(pattern="^(?:|none|http)$", title="Header")] = (
+        "none"
+    )
     request: HTTPRequest | None = None
     response: HTTPResponse | None = None
 
 
 class Telegram(BaseModel):
-    enable: bool | None = Field(False, title="Enable")
-    token: str | None = Field(None, title="Token")
-    webhook_url: str | None = Field(None, title="Webhook Url")
-    webhook_secret: str | None = Field(None, title="Webhook Secret")
-    proxy_url: str | None = Field(None, title="Proxy Url")
+    enable: Annotated[bool | None, Field(title="Enable")] = False
+    token: Annotated[str | None, Field(title="Token")] = None
+    webhook_url: Annotated[str | None, Field(title="Webhook Url")] = None
+    webhook_secret: Annotated[str | None, Field(title="Webhook Secret")] = None
+    proxy_url: Annotated[str | None, Field(title="Proxy Url")] = None
     method: RunMethod | None = "webhook"
-    mini_app_login: bool | None = Field(True, title="Mini App Login")
-    mini_app_web_url: str | None = Field("", title="Mini App Web Url")
-    for_admins_only: bool | None = Field(True, title="For Admins Only")
+    mini_app_login: Annotated[bool | None, Field(title="Mini App Login")] = True
+    mini_app_web_url: Annotated[str | None, Field(title="Mini App Web Url")] = ""
+    for_admins_only: Annotated[bool | None, Field(title="For Admins Only")] = True
 
 
 class Token(BaseModel):
-    access_token: str = Field(..., title="Access Token")
-    token_type: str | None = Field("bearer", title="Token Type")
+    access_token: Annotated[str, Field(title="Access Token")]
+    token_type: Annotated[str | None, Field(title="Token Type")] = "bearer"
 
 
 class TopUserUsage(BaseModel):
-    user_id: int = Field(..., title="User Id")
-    username: str = Field(..., title="Username")
-    total_traffic: int = Field(..., title="Total Traffic")
+    user_id: Annotated[int, Field(title="User Id")]
+    username: Annotated[str, Field(title="Username")]
+    total_traffic: Annotated[int, Field(title="Total Traffic")]
 
 
 class TopUsersUsageList(BaseModel):
-    start: AwareDatetime = Field(..., title="Start")
-    end: AwareDatetime = Field(..., title="End")
-    users: list[TopUserUsage] = Field(..., title="Users")
+    start: Annotated[AwareDatetime, Field(title="Start")]
+    end: Annotated[AwareDatetime, Field(title="End")]
+    users: Annotated[list[TopUserUsage], Field(title="Users")]
 
 
 class TotpCode(BaseModel):
-    code: str = Field(..., max_length=8, min_length=6, title="Code")
+    code: Annotated[str, Field(max_length=8, min_length=6, title="Code")]
 
 
 class TotpSetup(BaseModel):
-    secret: str = Field(..., title="Secret")
-    otpauth_url: str = Field(..., title="Otpauth Url")
-    qr_data_url: str = Field(..., title="Qr Data Url")
+    secret: Annotated[str, Field(title="Secret")]
+    otpauth_url: Annotated[str, Field(title="Otpauth Url")]
+    qr_data_url: Annotated[str, Field(title="Qr Data Url")]
 
 
 class TrojanSettings(BaseModel):
-    password: str | None = Field(None, title="Password")
+    password: Annotated[str | None, Field(title="Password")] = None
 
 
 class Unauthorized(BaseModel):
-    detail: str | None = Field("Not authenticated", title="Detail")
+    detail: Annotated[str | None, Field(title="Detail")] = "Not authenticated"
 
 
 class UsageTable(StrEnum):
@@ -1512,35 +1460,35 @@ class UserCountMetric(StrEnum):
 
 
 class UserCountMetricStat(BaseModel):
-    period_start: AwareDatetime = Field(..., title="Period Start")
-    count: int = Field(..., title="Count")
+    period_start: Annotated[AwareDatetime, Field(title="Period Start")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class UserCountMetricStatsList(BaseModel):
     period: Period | None = None
-    start: AwareDatetime = Field(..., title="Start")
-    end: AwareDatetime = Field(..., title="End")
+    start: Annotated[AwareDatetime, Field(title="Start")]
+    end: Annotated[AwareDatetime, Field(title="End")]
     metric: UserCountMetric
-    count_during_period: int | None = Field(0, title="Count During Period")
-    stats: dict[str, list[UserCountMetricStat]] = Field(..., title="Stats")
+    count_during_period: Annotated[int | None, Field(title="Count During Period")] = 0
+    stats: Annotated[dict[str, list[UserCountMetricStat]], Field(title="Stats")]
 
 
 class UserEventResponse(BaseModel):
-    id: int = Field(..., title="Id")
-    at: AwareDatetime = Field(..., title="At")
-    kind: str = Field(..., title="Kind")
-    by: str | None = Field(None, title="By")
-    detail: dict[str, Any] | None = Field(None, title="Detail")
+    id: Annotated[int, Field(title="Id")]
+    at: Annotated[AwareDatetime, Field(title="At")]
+    kind: Annotated[str, Field(title="Kind")]
+    by: Annotated[str | None, Field(title="By")] = None
+    detail: Annotated[dict[str, Any] | None, Field(title="Detail")] = None
 
 
 class UserHWIDResponse(BaseModel):
-    id: int = Field(..., title="Id")
-    hwid: str = Field(..., title="Hwid")
-    device_os: str | None = Field(None, title="Device Os")
-    os_version: str | None = Field(None, title="Os Version")
-    device_model: str | None = Field(None, title="Device Model")
-    created_at: AwareDatetime = Field(..., title="Created At")
-    last_used_at: AwareDatetime = Field(..., title="Last Used At")
+    id: Annotated[int, Field(title="Id")]
+    hwid: Annotated[str, Field(title="Hwid")]
+    device_os: Annotated[str | None, Field(title="Device Os")] = None
+    os_version: Annotated[str | None, Field(title="Os Version")] = None
+    device_model: Annotated[str | None, Field(title="Device Model")] = None
+    created_at: Annotated[AwareDatetime, Field(title="Created At")]
+    last_used_at: Annotated[AwareDatetime, Field(title="Last Used At")]
 
 
 class UserIPList(BaseModel):
@@ -1548,7 +1496,7 @@ class UserIPList(BaseModel):
     User IP list - mapping of IP addresses to connection counts
     """
 
-    ips: dict[str, int] = Field(..., title="Ips")
+    ips: Annotated[dict[str, int], Field(title="Ips")]
 
 
 class UserIPListAll(BaseModel):
@@ -1556,28 +1504,30 @@ class UserIPListAll(BaseModel):
     User IP lists for all nodes
     """
 
-    nodes: dict[str, UserIPList | None] = Field(..., title="Nodes")
+    nodes: Annotated[dict[str, UserIPList | None], Field(title="Nodes")]
 
 
 class UserIpSeenResponse(BaseModel):
-    ip: str = Field(..., title="Ip")
-    node_id: int = Field(..., title="Node Id")
-    node_name: str = Field(..., title="Node Name")
-    country: str | None = Field(None, title="Country")
-    city: str | None = Field(None, title="City")
-    first_seen: AwareDatetime = Field(..., title="First Seen")
-    last_seen: AwareDatetime = Field(..., title="Last Seen")
-    seen_count: int = Field(..., title="Seen Count")
+    ip: Annotated[str, Field(title="Ip")]
+    node_id: Annotated[int, Field(title="Node Id")]
+    node_name: Annotated[str, Field(title="Node Name")]
+    country: Annotated[str | None, Field(title="Country")] = None
+    city: Annotated[str | None, Field(title="City")] = None
+    first_seen: Annotated[AwareDatetime, Field(title="First Seen")]
+    last_seen: Annotated[AwareDatetime, Field(title="Last Seen")]
+    seen_count: Annotated[int, Field(title="Seen Count")]
 
 
 class UserNotificationEnable(BaseModel):
-    create: bool | None = Field(True, title="Create")
-    modify: bool | None = Field(True, title="Modify")
-    delete: bool | None = Field(True, title="Delete")
-    status_change: bool | None = Field(True, title="Status Change")
-    reset_data_usage: bool | None = Field(True, title="Reset Data Usage")
-    data_reset_by_next: bool | None = Field(True, title="Data Reset By Next")
-    subscription_revoked: bool | None = Field(True, title="Subscription Revoked")
+    create: Annotated[bool | None, Field(title="Create")] = True
+    modify: Annotated[bool | None, Field(title="Modify")] = True
+    delete: Annotated[bool | None, Field(title="Delete")] = True
+    status_change: Annotated[bool | None, Field(title="Status Change")] = True
+    reset_data_usage: Annotated[bool | None, Field(title="Reset Data Usage")] = True
+    data_reset_by_next: Annotated[bool | None, Field(title="Data Reset By Next")] = True
+    subscription_revoked: Annotated[
+        bool | None, Field(title="Subscription Revoked")
+    ] = True
 
 
 class UserSimple(BaseModel):
@@ -1585,8 +1535,8 @@ class UserSimple(BaseModel):
     Lightweight user model with only id and username for performance.
     """
 
-    id: int = Field(..., title="Id")
-    username: str = Field(..., title="Username")
+    id: Annotated[int, Field(title="Id")]
+    username: Annotated[str, Field(title="Username")]
 
 
 class UserStatus(StrEnum):
@@ -1603,48 +1553,26 @@ class UserStatusCreate(StrEnum):
 
 
 class UserStatusToggle(BaseModel):
-    disabled: bool = Field(..., title="Disabled")
+    disabled: Annotated[bool, Field(title="Disabled")]
 
 
 class UserSubscriptionUpdateChartSegment(BaseModel):
-    name: str = Field(..., title="Name")
-    count: int = Field(..., title="Count")
-    percentage: float = Field(..., title="Percentage")
+    name: Annotated[str, Field(title="Name")]
+    count: Annotated[int, Field(title="Count")]
+    percentage: Annotated[float, Field(title="Percentage")]
 
 
 class UserSubscriptionUpdateChartStat(BaseModel):
-    period_start: AwareDatetime = Field(..., title="Period Start")
-    agent: str = Field(..., title="Agent")
-    count: int = Field(..., title="Count")
+    period_start: Annotated[AwareDatetime, Field(title="Period Start")]
+    agent: Annotated[str, Field(title="Agent")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class UserSubscriptionUpdateSchema(BaseModel):
-    created_at: AwareDatetime = Field(..., title="Created At")
-    user_agent: str = Field(..., title="User Agent")
-    ip: str | None = Field(None, title="Ip")
-    hwid: str | None = Field(None, title="Hwid")
-
-
-class DeviceLimit4(RootModel[int]):
-    root: int = Field(..., ge=0, title="Device Limit")
-    """
-    concurrent devices per user; 0 or None = unlimited
-    """
-
-
-class ExpireDuration(RootModel[int]):
-    root: int = Field(..., ge=0, le=2147483647, title="Expire Duration")
-    """
-    expire_duration can be 0 or greater in seconds
-    """
-
-
-class UsernamePrefix(RootModel[str]):
-    root: str = Field(..., max_length=20, title="Username Prefix")
-
-
-class UsernameSuffix(RootModel[str]):
-    root: str = Field(..., max_length=20, title="Username Suffix")
+    created_at: Annotated[AwareDatetime, Field(title="Created At")]
+    user_agent: Annotated[str, Field(title="User Agent")]
+    ip: Annotated[str | None, Field(title="Ip")] = None
+    hwid: Annotated[str | None, Field(title="Hwid")] = None
 
 
 class UserTemplateSimple(BaseModel):
@@ -1652,8 +1580,8 @@ class UserTemplateSimple(BaseModel):
     Lightweight user template model with only id and name for performance.
     """
 
-    id: int = Field(..., title="Id")
-    name: str | None = Field(None, title="Name")
+    id: Annotated[int, Field(title="Id")]
+    name: Annotated[str | None, Field(title="Name")] = None
 
 
 class UserTemplatesSimpleResponse(BaseModel):
@@ -1661,20 +1589,20 @@ class UserTemplatesSimpleResponse(BaseModel):
     Response model for lightweight user template list.
     """
 
-    templates: list[UserTemplateSimple] = Field(..., title="Templates")
-    total: int = Field(..., title="Total")
+    templates: Annotated[list[UserTemplateSimple], Field(title="Templates")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class UserUsageStat(BaseModel):
-    period_start: AwareDatetime = Field(..., title="Period Start")
-    total_traffic: int = Field(..., title="Total Traffic")
+    period_start: Annotated[AwareDatetime, Field(title="Period Start")]
+    total_traffic: Annotated[int, Field(title="Total Traffic")]
 
 
 class UserUsageStatsList(BaseModel):
     period: Period | None = None
-    start: AwareDatetime = Field(..., title="Start")
-    end: AwareDatetime = Field(..., title="End")
-    stats: dict[str, list[UserUsageStat]] = Field(..., title="Stats")
+    start: Annotated[AwareDatetime, Field(title="Start")]
+    end: Annotated[AwareDatetime, Field(title="End")]
+    stats: Annotated[dict[str, list[UserUsageStat]], Field(title="Stats")]
 
 
 class UsernameGenerationStrategy(StrEnum):
@@ -1686,25 +1614,34 @@ class UsersPermissions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    create: bool | dict[str, PermissionScope | int] | None = Field(None, title="Create")
-    read: bool | dict[str, PermissionScope | int] | None = Field(None, title="Read")
-    read_simple: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Read Simple"
-    )
-    update: bool | dict[str, PermissionScope | int] | None = Field(None, title="Update")
-    delete: bool | dict[str, PermissionScope | int] | None = Field(None, title="Delete")
-    reset_usage: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Reset Usage"
-    )
-    revoke_sub: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Revoke Sub"
-    )
-    set_owner: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Set Owner"
-    )
-    activate_next_plan: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Activate Next Plan"
-    )
+    create: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Create")
+    ] = None
+    read: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read")
+    ] = None
+    read_simple: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read Simple")
+    ] = None
+    update: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Update")
+    ] = None
+    delete: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Delete")
+    ] = None
+    reset_usage: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Reset Usage")
+    ] = None
+    revoke_sub: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Revoke Sub")
+    ] = None
+    set_owner: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Set Owner")
+    ] = None
+    activate_next_plan: Annotated[
+        bool | dict[str, PermissionScope | int] | None,
+        Field(title="Activate Next Plan"),
+    ] = None
 
 
 class UsersSimpleResponse(BaseModel):
@@ -1712,45 +1649,33 @@ class UsersSimpleResponse(BaseModel):
     Response model for lightweight user list.
     """
 
-    users: list[UserSimple] = Field(..., title="Users")
-    total: int = Field(..., title="Total")
+    users: Annotated[list[UserSimple], Field(title="Users")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class VMessSettings(BaseModel):
-    id: UUID | None = Field(None, title="Id")
+    id: Annotated[UUID | None, Field(title="Id")] = None
 
 
 class ValidationError(BaseModel):
-    loc: list[str | int] = Field(..., title="Location")
-    msg: str = Field(..., title="Message")
-    type: str = Field(..., title="Error Type")
-    input: Any | None = Field(None, title="Input")
-    ctx: dict[str, Any] | None = Field(None, title="Context")
+    loc: Annotated[list[str | int], Field(title="Location")]
+    msg: Annotated[str, Field(title="Message")]
+    type: Annotated[str, Field(title="Error Type")]
+    input: Annotated[Any | None, Field(title="Input")] = None
+    ctx: Annotated[dict[str, Any] | None, Field(title="Context")] = None
 
 
 class VlessSettings(BaseModel):
-    id: UUID | None = Field(None, title="Id")
+    id: Annotated[UUID | None, Field(title="Id")] = None
 
 
 class WebSocketSettings(BaseModel):
-    heartbeatPeriod: int | None = Field(None, title="Heartbeatperiod")
+    heartbeatPeriod: Annotated[int | None, Field(title="Heartbeatperiod")] = None
 
 
 class WebhookInfo(BaseModel):
-    url: str = Field(..., title="Url")
-    secret: str = Field(..., title="Secret")
-
-
-class Mtu(RootModel[int]):
-    root: int = Field(..., ge=576, le=9000, title="Mtu")
-
-
-class Reserved(RootModel[str]):
-    root: str = Field(..., max_length=64, title="Reserved")
-
-
-class KeepaliveSeconds(RootModel[int]):
-    root: int = Field(..., ge=0, le=86400, title="Keepalive Seconds")
+    url: Annotated[str, Field(title="Url")]
+    secret: Annotated[str, Field(title="Secret")]
 
 
 class WireGuardHostOverrides(BaseModel):
@@ -1758,32 +1683,34 @@ class WireGuardHostOverrides(BaseModel):
     Optional per-host values merged into WireGuard subscription output.
     """
 
-    allowed_ips: list[str] | None = Field(None, title="Allowed Ips")
-    mtu: Mtu | None = Field(None, title="Mtu")
-    reserved: Reserved | None = Field(None, title="Reserved")
-    keepalive_seconds: KeepaliveSeconds | None = Field(None, title="Keepalive Seconds")
-    dns: list[str] | None = Field(None, title="Dns")
+    allowed_ips: Annotated[list[str] | None, Field(title="Allowed Ips")] = None
+    mtu: Annotated[int | None, Field(title="Mtu")] = None
+    reserved: Annotated[str | None, Field(title="Reserved")] = None
+    keepalive_seconds: Annotated[
+        int | None, Field(title="Keepalive Seconds")
+    ] = None
+    dns: Annotated[list[str] | None, Field(title="Dns")] = None
 
 
 class WireGuardSettings(BaseModel):
-    private_key: str | None = Field(None, title="Private Key")
-    public_key: str | None = Field(None, title="Public Key")
-    peer_ips: list[str] | None = Field(None, title="Peer Ips")
+    private_key: Annotated[str | None, Field(title="Private Key")] = None
+    public_key: Annotated[str | None, Field(title="Public Key")] = None
+    peer_ips: Annotated[list[str] | None, Field(title="Peer Ips")] = None
 
 
 class WireGuardSubnetUsage(BaseModel):
-    subnet: str = Field(..., title="Subnet")
-    interface_tags: list[str] = Field(..., title="Interface Tags")
-    capacity: int = Field(..., title="Capacity")
-    used: int = Field(..., title="Used")
-    free: int = Field(..., title="Free")
-    free_ips: list[str] = Field(..., title="Free Ips")
+    subnet: Annotated[str, Field(title="Subnet")]
+    interface_tags: Annotated[list[str], Field(title="Interface Tags")]
+    capacity: Annotated[int, Field(title="Capacity")]
+    used: Annotated[int, Field(title="Used")]
+    free: Annotated[int, Field(title="Free")]
+    free_ips: Annotated[list[str], Field(title="Free Ips")]
 
 
 class WorkerHealth(BaseModel):
-    status: str = Field(..., title="Status")
-    response_time_ms: int | None = Field(None, title="Response Time Ms")
-    error: str | None = Field(None, title="Error")
+    status: Annotated[str, Field(title="Status")]
+    response_time_ms: Annotated[int | None, Field(title="Response Time Ms")] = None
+    error: Annotated[str | None, Field(title="Error")] = None
 
 
 class WorkersHealth(BaseModel):
@@ -1798,95 +1725,23 @@ class XHttpModes(StrEnum):
     stream_one = "stream-one"
 
 
-class XPaddingBytes(RootModel[str]):
-    root: str = Field(..., pattern="^\\d{1,16}(-\\d{1,16})?$", title="X Padding Bytes")
-
-
-class XPaddingPlacement(RootModel[str]):
-    root: str = Field(
-        ...,
-        pattern="^$|^(cookie|header|query|queryInHeader)$",
-        title="X Padding Placement",
-    )
-
-
-class XPaddingMethod(RootModel[str]):
-    root: str = Field(..., pattern="^$|^(repeat-x|tokenish)$", title="X Padding Method")
-
-
-class SessionPlacement(RootModel[str]):
-    root: str = Field(
-        ..., pattern="^$|^(path|cookie|header|query)$", title="Session Placement"
-    )
-
-
-class SessionIdTable(RootModel[str]):
-    root: str = Field(..., pattern="^[\\x20-\\x7E]*$", title="Session Id Table")
-
-
-class SessionIdLength(RootModel[str]):
-    root: str = Field(
-        ..., pattern="^\\d{1,16}(-\\d{1,16})?$", title="Session Id Length"
-    )
-
-
-class SeqPlacement(RootModel[str]):
-    root: str = Field(
-        ..., pattern="^$|^(path|cookie|header|query)$", title="Seq Placement"
-    )
-
-
-class UplinkDataPlacement(RootModel[str]):
-    root: str = Field(
-        ..., pattern="^$|^(body|cookie|header)$", title="Uplink Data Placement"
-    )
-
-
-class UplinkChunkSize(RootModel[str]):
-    root: str = Field(
-        ..., pattern="^\\d{1,16}(-\\d{1,16})?$", title="Uplink Chunk Size"
-    )
-
-
-class ScMaxEachPostBytes(RootModel[str]):
-    root: str = Field(
-        ..., pattern="^\\d{1,16}(-\\d{1,16})?$", title="Sc Max Each Post Bytes"
-    )
-
-
-class ScMinPostsIntervalMs(RootModel[str]):
-    root: str = Field(
-        ..., pattern="^\\d{1,16}(-\\d{1,16})?$", title="Sc Min Posts Interval Ms"
-    )
-
-
-class MaxConcurrency(RootModel[str]):
-    root: str = Field(..., pattern="^\\d{1,16}(-\\d{1,16})?$", title="Maxconcurrency")
-
-
-class MaxConnections(RootModel[str]):
-    root: str = Field(..., pattern="^\\d{1,16}(-\\d{1,16})?$", title="Maxconnections")
-
-
-class CMaxReuseTimes(RootModel[str]):
-    root: str = Field(..., pattern="^\\d{1,16}(-\\d{1,16})?$", title="Cmaxreusetimes")
-
-
-class HMaxReusableSecs(RootModel[str]):
-    root: str = Field(..., pattern="^\\d{1,16}(-\\d{1,16})?$", title="Hmaxreusablesecs")
-
-
-class HMaxRequestTimes(RootModel[str]):
-    root: str = Field(..., pattern="^\\d{1,16}(-\\d{1,16})?$", title="Hmaxrequesttimes")
-
-
 class XMuxSettings(BaseModel):
-    maxConcurrency: MaxConcurrency | None = Field(None, title="Maxconcurrency")
-    maxConnections: MaxConnections | None = Field(None, title="Maxconnections")
-    cMaxReuseTimes: CMaxReuseTimes | None = Field(None, title="Cmaxreusetimes")
-    hMaxReusableSecs: HMaxReusableSecs | None = Field(None, title="Hmaxreusablesecs")
-    hMaxRequestTimes: HMaxRequestTimes | None = Field(None, title="Hmaxrequesttimes")
-    hKeepAlivePeriod: int | None = Field(None, title="Hkeepaliveperiod")
+    maxConcurrency: Annotated[str | None, Field(title="Maxconcurrency")] = (
+        None
+    )
+    maxConnections: Annotated[str | None, Field(title="Maxconnections")] = (
+        None
+    )
+    cMaxReuseTimes: Annotated[str | None, Field(title="Cmaxreusetimes")] = (
+        None
+    )
+    hMaxReusableSecs: Annotated[
+        str | None, Field(title="Hmaxreusablesecs")
+    ] = None
+    hMaxRequestTimes: Annotated[
+        str | None, Field(title="Hmaxrequesttimes")
+    ] = None
+    hKeepAlivePeriod: Annotated[int | None, Field(title="Hkeepaliveperiod")] = None
 
 
 class XUDP(StrEnum):
@@ -1897,10 +1752,10 @@ class XUDP(StrEnum):
 
 class XrayECHSettings(BaseModel):
     """
-    Xray-specific ECH settings.
+    int-specific ECH settings.
     """
 
-    config_list: str | None = Field(None, title="Config List")
+    config_list: Annotated[str | None, Field(title="Config List")] = None
     query_strategy: ECHQueryStrategy | None = None
 
 
@@ -1908,23 +1763,25 @@ class XrayFragmentSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    packets: str = Field(..., pattern="^(:?tlshello|[\\d-]{1,16})$", title="Packets")
-    length: str = Field(..., pattern="^[\\d-]{1,16}$", title="Length")
-    interval: str = Field(..., pattern="^[\\d-]{1,16}$", title="Interval")
-    maxSplit: str | None = Field(None, title="Maxsplit")
+    packets: Annotated[
+        str, Field(pattern="^(:?tlshello|[\\d-]{1,16})$", title="Packets")
+    ]
+    length: Annotated[str, Field(pattern="^[\\d-]{1,16}$", title="Length")]
+    interval: Annotated[str, Field(pattern="^[\\d-]{1,16}$", title="Interval")]
+    maxSplit: Annotated[str | None, Field(title="Maxsplit")] = None
 
 
 class XrayMuxSettingsInput(BaseModel):
-    enabled: bool | None = Field(False, title="Enabled")
-    concurrency: int | None = Field(None, title="Concurrency")
-    xudp_concurrency: int | None = Field(None, title="Xudp Concurrency")
+    enabled: Annotated[bool | None, Field(title="Enabled")] = False
+    concurrency: Annotated[int | None, Field(title="Concurrency")] = None
+    xudp_concurrency: Annotated[int | None, Field(title="Xudp Concurrency")] = None
     xudp_proxy_udp_443: XUDP | None = "reject"
 
 
 class XrayMuxSettingsOutput(BaseModel):
-    enabled: bool | None = Field(False, title="Enabled")
-    concurrency: int | None = Field(None, title="Concurrency")
-    xudpConcurrency: int | None = Field(None, title="Xudpconcurrency")
+    enabled: Annotated[bool | None, Field(title="Enabled")] = False
+    concurrency: Annotated[int | None, Field(title="Concurrency")] = None
+    xudpConcurrency: Annotated[int | None, Field(title="Xudpconcurrency")] = None
     xudpProxyUDP443: XUDP | None = "reject"
 
 
@@ -1932,24 +1789,32 @@ class XrayNoiseSettings(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    type: str = Field(..., pattern="^$|^(:?rand|str|base64|hex)$", title="Type")
-    packet: str | list[int] | None = Field(None, title="Packet")
-    delay: str | int | None = Field(None, title="Delay")
-    apply_to: str | None = Field("ip", pattern="ip|ipv4|ipv6", title="Apply To")
-    rand: int | str | None = Field(None, title="Rand")
+    type: Annotated[str, Field(pattern="^$|^(:?rand|str|base64|hex)$", title="Type")]
+    packet: Annotated[str | list[int] | None, Field(title="Packet")] = None
+    delay: Annotated[str | int | None, Field(title="Delay")] = None
+    apply_to: Annotated[str | None, Field(pattern="ip|ipv4|ipv6", title="Apply To")] = (
+        "ip"
+    )
+    rand: Annotated[int | str | None, Field(title="Rand")] = None
 
 
 class APIKeysPermissions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    create: bool | None = Field(None, title="Create")
-    read: bool | dict[str, PermissionScope | int] | None = Field(None, title="Read")
-    read_simple: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Read Simple"
-    )
-    update: bool | dict[str, PermissionScope | int] | None = Field(None, title="Update")
-    delete: bool | dict[str, PermissionScope | int] | None = Field(None, title="Delete")
+    create: Annotated[bool | None, Field(title="Create")] = None
+    read: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read")
+    ] = None
+    read_simple: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read Simple")
+    ] = None
+    update: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Update")
+    ] = None
+    delete: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Delete")
+    ] = None
 
 
 class AdminContactInfo(BaseModel):
@@ -1957,16 +1822,16 @@ class AdminContactInfo(BaseModel):
     Base model containing the core admin identification fields.
     """
 
-    id: int | None = Field(None, title="Id")
-    username: str = Field(..., title="Username")
-    telegram_id: int | None = Field(None, title="Telegram Id")
-    discord_webhook: str | None = Field(None, title="Discord Webhook")
-    sub_domain: str | None = Field(None, title="Sub Domain")
-    profile_title: str | None = Field(None, title="Profile Title")
-    support_url: str | None = Field(None, title="Support Url")
-    custom_variables: list[CustomVariable] | None = Field(
-        None, title="Custom Variables"
-    )
+    id: Annotated[int | None, Field(title="Id")] = None
+    username: Annotated[str, Field(title="Username")]
+    telegram_id: Annotated[int | None, Field(title="Telegram Id")] = None
+    discord_webhook: Annotated[str | None, Field(title="Discord Webhook")] = None
+    sub_domain: Annotated[str | None, Field(title="Sub Domain")] = None
+    profile_title: Annotated[str | None, Field(title="Profile Title")] = None
+    support_url: Annotated[str | None, Field(title="Support Url")] = None
+    custom_variables: Annotated[
+        list[CustomVariable] | None, Field(title="Custom Variables")
+    ] = None
     notification_enable: UserNotificationEnable | None = None
 
 
@@ -1975,41 +1840,41 @@ class AdminCreate(BaseModel):
     Model for creating new admin accounts requiring username and password.
     """
 
-    password: str = Field(..., title="Password")
-    telegram_id: int | None = Field(None, title="Telegram Id")
-    discord_webhook: str | None = Field(None, title="Discord Webhook")
-    status: Status | None = Field(None, title="Status")
-    data_limit: int | None = Field(None, title="Data Limit")
-    sub_template: str | None = Field(None, title="Sub Template")
-    sub_domain: str | None = Field(None, title="Sub Domain")
-    profile_title: str | None = Field(None, title="Profile Title")
-    support_url: str | None = Field(None, title="Support Url")
-    custom_variables: list[CustomVariable] | None = Field(
-        None, title="Custom Variables"
-    )
-    note: str | None = Field(None, title="Note")
+    password: Annotated[str, Field(title="Password")]
+    telegram_id: Annotated[int | None, Field(title="Telegram Id")] = None
+    discord_webhook: Annotated[str | None, Field(title="Discord Webhook")] = None
+    status: Annotated[Status | None, Field(title="Status")] = None
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = None
+    sub_template: Annotated[str | None, Field(title="Sub Template")] = None
+    sub_domain: Annotated[str | None, Field(title="Sub Domain")] = None
+    profile_title: Annotated[str | None, Field(title="Profile Title")] = None
+    support_url: Annotated[str | None, Field(title="Support Url")] = None
+    custom_variables: Annotated[
+        list[CustomVariable] | None, Field(title="Custom Variables")
+    ] = None
+    note: Annotated[str | None, Field(title="Note")] = None
     notification_enable: UserNotificationEnable | None = None
-    role_id: int = Field(..., title="Role Id")
+    role_id: Annotated[int, Field(title="Role Id")]
     permission_overrides: RoleLimits | None = None
-    username: str = Field(..., title="Username")
+    username: Annotated[str, Field(title="Username")]
 
 
 class AdminModify(BaseModel):
-    password: str | None = Field(None, title="Password")
-    telegram_id: int | None = Field(None, title="Telegram Id")
-    discord_webhook: str | None = Field(None, title="Discord Webhook")
-    status: Status | None = Field(None, title="Status")
-    data_limit: int | None = Field(None, title="Data Limit")
-    sub_template: str | None = Field(None, title="Sub Template")
-    sub_domain: str | None = Field(None, title="Sub Domain")
-    profile_title: str | None = Field(None, title="Profile Title")
-    support_url: str | None = Field(None, title="Support Url")
-    custom_variables: list[CustomVariable] | None = Field(
-        None, title="Custom Variables"
-    )
-    note: str | None = Field(None, title="Note")
+    password: Annotated[str | None, Field(title="Password")] = None
+    telegram_id: Annotated[int | None, Field(title="Telegram Id")] = None
+    discord_webhook: Annotated[str | None, Field(title="Discord Webhook")] = None
+    status: Annotated[Status | None, Field(title="Status")] = None
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = None
+    sub_template: Annotated[str | None, Field(title="Sub Template")] = None
+    sub_domain: Annotated[str | None, Field(title="Sub Domain")] = None
+    profile_title: Annotated[str | None, Field(title="Profile Title")] = None
+    support_url: Annotated[str | None, Field(title="Support Url")] = None
+    custom_variables: Annotated[
+        list[CustomVariable] | None, Field(title="Custom Variables")
+    ] = None
+    note: Annotated[str | None, Field(title="Note")] = None
     notification_enable: UserNotificationEnable | None = None
-    role_id: int | None = Field(None, title="Role Id")
+    role_id: Annotated[int | None, Field(title="Role Id")] = None
     permission_overrides: RoleLimits | None = None
 
 
@@ -2017,53 +1882,57 @@ class AdminsPermissions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    create: bool | dict[str, PermissionScope | int] | None = Field(None, title="Create")
-    read: bool | dict[str, PermissionScope | int] | None = Field(None, title="Read")
-    read_simple: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Read Simple"
-    )
-    update: bool | dict[str, PermissionScope | int] | None = Field(None, title="Update")
-    delete: bool | dict[str, PermissionScope | int] | None = Field(None, title="Delete")
-    reset_usage: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Reset Usage"
-    )
-
-
-class Status2(RootModel[list[UserStatus]]):
-    root: list[UserStatus] = Field(..., title="Status")
+    create: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Create")
+    ] = None
+    read: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read")
+    ] = None
+    read_simple: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read Simple")
+    ] = None
+    update: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Update")
+    ] = None
+    delete: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Delete")
+    ] = None
+    reset_usage: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Reset Usage")
+    ] = None
 
 
 class BulkUser(BaseModel):
-    dry_run: bool | None = Field(False, title="Dry Run")
-    group_ids: list[int] | None = Field(None, title="Group Ids")
-    admins: list[int] | None = Field(None, title="Admins")
-    users: list[int] | None = Field(None, title="Users")
-    status: list[UserStatus] | None = Field(None, title="Status")
-    expire_after: AwareDatetime | None = Field(None, title="Expire After")
-    expire_before: AwareDatetime | None = Field(None, title="Expire Before")
-    amount: int = Field(..., title="Amount")
+    dry_run: Annotated[bool | None, Field(title="Dry Run")] = False
+    group_ids: Annotated[list[int] | None, Field(title="Group Ids")] = None
+    admins: Annotated[list[int] | None, Field(title="Admins")] = None
+    users: Annotated[list[int] | None, Field(title="Users")] = None
+    status: Annotated[list[UserStatus] | None, Field(title="Status")] = None
+    expire_after: Annotated[AwareDatetime | None, Field(title="Expire After")] = None
+    expire_before: Annotated[AwareDatetime | None, Field(title="Expire Before")] = None
+    amount: Annotated[int, Field(title="Amount")]
 
 
 class BulkUsersFromTemplate(BaseModel):
-    user_template_id: int = Field(..., title="User Template Id")
-    note: Note4 | None = Field(None, title="Note")
-    username: str | None = Field(None, title="Username")
-    count: int = Field(..., gt=0, le=500, title="Count")
+    user_template_id: Annotated[int, Field(title="User Template Id")]
+    note: Annotated[str | None, Field(title="Note")] = None
+    username: Annotated[str | None, Field(title="Username")] = None
+    count: Annotated[int, Field(gt=0, le=500, title="Count")]
     strategy: UsernameGenerationStrategy | None = "random"
-    start_number: StartNumber | None = Field(None, title="Start Number")
+    start_number: Annotated[int | None, Field(title="Start Number")] = None
     """
     Starting suffix for sequence strategy (defaults to 1; base username digits are ignored)
     """
 
 
 class BulkUsersProxy(BaseModel):
-    dry_run: bool | None = Field(False, title="Dry Run")
-    group_ids: list[int] | None = Field(None, title="Group Ids")
-    admins: list[int] | None = Field(None, title="Admins")
-    users: list[int] | None = Field(None, title="Users")
-    status: list[UserStatus] | None = Field(None, title="Status")
-    expire_after: AwareDatetime | None = Field(None, title="Expire After")
-    expire_before: AwareDatetime | None = Field(None, title="Expire Before")
+    dry_run: Annotated[bool | None, Field(title="Dry Run")] = False
+    group_ids: Annotated[list[int] | None, Field(title="Group Ids")] = None
+    admins: Annotated[list[int] | None, Field(title="Admins")] = None
+    users: Annotated[list[int] | None, Field(title="Users")] = None
+    status: Annotated[list[UserStatus] | None, Field(title="Status")] = None
+    expire_after: Annotated[AwareDatetime | None, Field(title="Expire After")] = None
+    expire_before: Annotated[AwareDatetime | None, Field(title="Expire Before")] = None
     method: ShadowsocksMethods | None = None
 
 
@@ -2077,87 +1946,98 @@ class CRUDPermissions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    create: bool | dict[str, PermissionScope | int] | None = Field(None, title="Create")
-    read: bool | dict[str, PermissionScope | int] | None = Field(None, title="Read")
-    read_simple: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Read Simple"
-    )
-    update: bool | dict[str, PermissionScope | int] | None = Field(None, title="Update")
-    delete: bool | dict[str, PermissionScope | int] | None = Field(None, title="Delete")
+    create: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Create")
+    ] = None
+    read: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read")
+    ] = None
+    read_simple: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read Simple")
+    ] = None
+    update: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Update")
+    ] = None
+    delete: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Delete")
+    ] = None
 
 
 class ClashMuxSettings(BaseModel):
-    enable: bool | None = Field(False, title="Enable")
+    enable: Annotated[bool | None, Field(title="Enable")] = False
     protocol: MultiplexProtocol | None = "smux"
-    max_connections: int | None = Field(None, title="Max Connections")
-    max_streams: int | None = Field(None, title="Max Streams")
-    min_streams: int | None = Field(None, title="Min Streams")
-    padding: bool | None = Field(False, title="Padding")
+    max_connections: Annotated[int | None, Field(title="Max Connections")] = None
+    max_streams: Annotated[int | None, Field(title="Max Streams")] = None
+    min_streams: Annotated[int | None, Field(title="Min Streams")] = None
+    padding: Annotated[bool | None, Field(title="Padding")] = False
     brutal: Brutal | None = None
-    statistic: bool | None = Field(False, title="Statistic")
-    only_tcp: bool | None = Field(False, title="Only Tcp")
+    statistic: Annotated[bool | None, Field(title="Statistic")] = False
+    only_tcp: Annotated[bool | None, Field(title="Only Tcp")] = False
 
 
 class ClientTemplateCreate(BaseModel):
-    name: str = Field(..., max_length=64, title="Name")
+    name: Annotated[str, Field(max_length=64, title="Name")]
     template_type: ClientTemplateType
-    content: str = Field(..., title="Content")
-    is_default: bool | None = Field(False, title="Is Default")
+    content: Annotated[str, Field(title="Content")]
+    is_default: Annotated[bool | None, Field(title="Is Default")] = False
 
 
 class ClientTemplateResponse(BaseModel):
-    id: int = Field(..., title="Id")
-    name: str = Field(..., title="Name")
+    id: Annotated[int, Field(title="Id")]
+    name: Annotated[str, Field(title="Name")]
     template_type: ClientTemplateType
-    content: str = Field(..., title="Content")
-    is_default: bool = Field(..., title="Is Default")
-    is_system: bool = Field(..., title="Is System")
+    content: Annotated[str, Field(title="Content")]
+    is_default: Annotated[bool, Field(title="Is Default")]
+    is_system: Annotated[bool, Field(title="Is System")]
 
 
 class ClientTemplateResponseList(BaseModel):
-    count: int = Field(..., title="Count")
-    templates: list[ClientTemplateResponse] | None = Field(
-        [], title="Templates", validate_default=True
-    )
+    count: Annotated[int, Field(title="Count")]
+    templates: Annotated[
+        list[ClientTemplateResponse] | None,
+        Field(title="Templates", validate_default=True),
+    ] = []
 
 
 class ClientTemplateSimple(BaseModel):
-    id: int = Field(..., title="Id")
-    name: str = Field(..., title="Name")
+    id: Annotated[int, Field(title="Id")]
+    name: Annotated[str, Field(title="Name")]
     template_type: ClientTemplateType
-    is_default: bool = Field(..., title="Is Default")
+    is_default: Annotated[bool, Field(title="Is Default")]
 
 
 class ClientTemplatesSimpleResponse(BaseModel):
-    templates: list[ClientTemplateSimple] = Field(..., title="Templates")
-    total: int = Field(..., title="Total")
+    templates: Annotated[list[ClientTemplateSimple], Field(title="Templates")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class CoreCreate(BaseModel):
-    name: Name3 | None = Field(None, title="Name")
-    config: dict[str, Any] = Field(..., title="Config")
+    name: Annotated[str | None, Field(title="Name")] = None
+    config: Annotated[dict[str, Any], Field(title="Config")]
     type: CoreType | None = None
-    exclude_inbound_tags: ExcludeInboundTags | None = Field(
-        None, title="Exclude Inbound Tags"
-    )
-    fallbacks_inbound_tags: FallbacksInboundTags | None = Field(
-        None, title="Fallbacks Inbound Tags"
-    )
+    exclude_inbound_tags: Annotated[
+        list[Any] | None, Field(title="Exclude Inbound Tags")
+    ] = None
+    fallbacks_inbound_tags: Annotated[
+        list[Any] | None, Field(title="Fallbacks Inbound Tags")
+    ] = None
 
 
 class CoreResponse(BaseModel):
-    name: str = Field(..., title="Name")
-    config: dict[str, Any] = Field(..., title="Config")
+    name: Annotated[str, Field(title="Name")]
+    config: Annotated[dict[str, Any], Field(title="Config")]
     type: CoreType | None = None
-    exclude_inbound_tags: list[str] = Field(..., title="Exclude Inbound Tags")
-    fallbacks_inbound_tags: list[str] = Field(..., title="Fallbacks Inbound Tags")
-    id: int = Field(..., title="Id")
-    created_at: AwareDatetime = Field(..., title="Created At")
+    exclude_inbound_tags: Annotated[list[str], Field(title="Exclude Inbound Tags")]
+    fallbacks_inbound_tags: Annotated[list[str], Field(title="Fallbacks Inbound Tags")]
+    id: Annotated[int, Field(title="Id")]
+    created_at: Annotated[AwareDatetime, Field(title="Created At")]
 
 
 class CoreResponseList(BaseModel):
-    count: int = Field(..., title="Count")
-    cores: list[CoreResponse] | None = Field([], title="Cores", validate_default=True)
+    count: Annotated[int, Field(title="Count")]
+    cores: Annotated[
+        list[CoreResponse] | None, Field(title="Cores", validate_default=True)
+    ] = []
 
 
 class CoreSimple(BaseModel):
@@ -2165,8 +2045,8 @@ class CoreSimple(BaseModel):
     Lightweight core model with only id, name and type for performance.
     """
 
-    id: int = Field(..., title="Id")
-    name: str = Field(..., title="Name")
+    id: Annotated[int, Field(title="Id")]
+    name: Annotated[str, Field(title="Name")]
     type: CoreType | None = None
 
 
@@ -2175,13 +2055,13 @@ class CoresSimpleResponse(BaseModel):
     Response model for lightweight core list.
     """
 
-    cores: list[CoreSimple] = Field(..., title="Cores")
-    total: int = Field(..., title="Total")
+    cores: Annotated[list[CoreSimple], Field(title="Cores")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class DownloadLink(BaseModel):
-    name: str = Field(..., max_length=64, title="Name")
-    url: str = Field(..., title="Url")
+    name: Annotated[str, Field(max_length=64, title="Name")]
+    url: Annotated[str, Field(title="Url")]
     language: Language
 
 
@@ -2204,23 +2084,29 @@ class FinalMaskQuicParams(BaseModel):
         extra="allow",
     )
     congestion: FinalMaskQuicCongestion | None = None
-    debug: bool | None = Field(None, title="Debug")
-    bbrProfile: str | None = Field(None, title="Bbrprofile")
-    brutalUp: str | int | float | None = Field(None, title="Brutalup")
-    brutalDown: str | int | float | None = Field(None, title="Brutaldown")
+    debug: Annotated[bool | None, Field(title="Debug")] = None
+    bbrProfile: Annotated[str | None, Field(title="Bbrprofile")] = None
+    brutalUp: Annotated[str | int | float | None, Field(title="Brutalup")] = None
+    brutalDown: Annotated[str | int | float | None, Field(title="Brutaldown")] = None
     udpHop: FinalMaskUdpHop | None = None
-    initStreamReceiveWindow: int | None = Field(None, title="Initstreamreceivewindow")
-    maxStreamReceiveWindow: int | None = Field(None, title="Maxstreamreceivewindow")
-    initConnectionReceiveWindow: int | None = Field(
-        None, title="Initconnectionreceivewindow"
-    )
-    maxConnectionReceiveWindow: int | None = Field(
-        None, title="Maxconnectionreceivewindow"
-    )
-    maxIdleTimeout: int | None = Field(None, title="Maxidletimeout")
-    keepAlivePeriod: int | None = Field(None, title="Keepaliveperiod")
-    disablePathMTUDiscovery: bool | None = Field(None, title="Disablepathmtudiscovery")
-    maxIncomingStreams: int | None = Field(None, title="Maxincomingstreams")
+    initStreamReceiveWindow: Annotated[
+        int | None, Field(title="Initstreamreceivewindow")
+    ] = None
+    maxStreamReceiveWindow: Annotated[
+        int | None, Field(title="Maxstreamreceivewindow")
+    ] = None
+    initConnectionReceiveWindow: Annotated[
+        int | None, Field(title="Initconnectionreceivewindow")
+    ] = None
+    maxConnectionReceiveWindow: Annotated[
+        int | None, Field(title="Maxconnectionreceivewindow")
+    ] = None
+    maxIdleTimeout: Annotated[int | None, Field(title="Maxidletimeout")] = None
+    keepAlivePeriod: Annotated[int | None, Field(title="Keepaliveperiod")] = None
+    disablePathMTUDiscovery: Annotated[
+        bool | None, Field(title="Disablepathmtudiscovery")
+    ] = None
+    maxIncomingStreams: Annotated[int | None, Field(title="Maxincomingstreams")] = None
 
 
 class FinalMaskTcpLayer(BaseModel):
@@ -2228,14 +2114,15 @@ class FinalMaskTcpLayer(BaseModel):
         extra="allow",
     )
     type: FinalMaskTcpType
-    settings: (
+    settings: Annotated[
         FinalMaskTcpHeaderCustomSettings
         | FinalMaskFragmentSettings
         | FinalMaskSudokuSettings
         | FinalMaskXmcSettings
         | dict[str, Any]
-        | None
-    ) = Field(None, title="Settings")
+        | None,
+        Field(title="Settings"),
+    ] = None
 
 
 class FinalMaskUdpLayer(BaseModel):
@@ -2243,7 +2130,7 @@ class FinalMaskUdpLayer(BaseModel):
         extra="allow",
     )
     type: FinalMaskUdpType
-    settings: (
+    settings: Annotated[
         FinalMaskUdpHeaderCustomSettings
         | FinalMaskPasswordSettings
         | FinalMaskSudokuSettings
@@ -2255,8 +2142,9 @@ class FinalMaskUdpLayer(BaseModel):
         | FinalMaskRealmSettings
         | FinalMaskMkcpLegacySettings
         | dict[str, Any]
-        | None
-    ) = Field(None, title="Settings")
+        | None,
+        Field(title="Settings"),
+    ] = None
 
 
 class FragmentSettings(BaseModel):
@@ -2266,38 +2154,48 @@ class FragmentSettings(BaseModel):
 
 class General(BaseModel):
     default_method: ShadowsocksMethods | None = "chacha20-ietf-poly1305"
-    custom_variables: list[CustomVariable] | None = Field(
-        None, title="Custom Variables"
-    )
-    timezone: str | None = Field("Asia/Tehran", title="Timezone")
+    custom_variables: Annotated[
+        list[CustomVariable] | None, Field(title="Custom Variables")
+    ] = None
+    timezone: Annotated[str | None, Field(title="Timezone")] = "Asia/Tehran"
     """
     IANA zone the panel shows times in and cuts its days on
     """
-    server_labels: dict[str, str] | None = Field(None, title="Server Labels")
+    server_labels: Annotated[dict[str, str] | None, Field(title="Server Labels")] = None
     """
     Display name per server address on the Nodes page
     """
 
 
 class HTTPValidationError(BaseModel):
-    detail: list[ValidationError] | None = Field(None, title="Detail")
+    detail: Annotated[list[ValidationError] | None, Field(title="Detail")] = None
 
 
 class HostsPermissions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    create: bool | dict[str, PermissionScope | int] | None = Field(None, title="Create")
-    read: bool | dict[str, PermissionScope | int] | None = Field(None, title="Read")
-    update: bool | dict[str, PermissionScope | int] | None = Field(None, title="Update")
+    create: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Create")
+    ] = None
+    read: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read")
+    ] = None
+    update: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Update")
+    ] = None
 
 
 class HwidsPermissions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    read: bool | dict[str, PermissionScope | int] | None = Field(None, title="Read")
-    delete: bool | dict[str, PermissionScope | int] | None = Field(None, title="Delete")
+    read: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read")
+    ] = None
+    delete: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Delete")
+    ] = None
 
 
 class MuxSettingsInput(BaseModel):
@@ -2313,52 +2211,62 @@ class MuxSettingsOutput(BaseModel):
 
 
 class NodeModify(BaseModel):
-    name: str | None = Field(None, title="Name")
-    address: str | None = Field(None, title="Address")
-    port: int | None = Field(None, title="Port")
-    api_port: int | None = Field(62051, title="Api Port")
-    usage_coefficient: UsageCoefficient | None = Field(None, title="Usage Coefficient")
+    name: Annotated[str | None, Field(title="Name")] = None
+    address: Annotated[str | None, Field(title="Address")] = None
+    port: Annotated[int | None, Field(title="Port")] = None
+    api_port: Annotated[int | None, Field(title="Api Port")] = 62051
+    usage_coefficient: Annotated[
+        float | None, Field(title="Usage Coefficient")
+    ] = None
     connection_type: NodeConnectionType | None = None
-    server_ca: str | None = Field(None, title="Server Ca")
-    keep_alive: int | None = Field(None, title="Keep Alive")
-    core_config_id: int | None = Field(None, title="Core Config Id")
-    api_key: str | None = Field(None, title="Api Key")
-    data_limit: int | None = Field(None, title="Data Limit")
+    server_ca: Annotated[str | None, Field(title="Server Ca")] = None
+    keep_alive: Annotated[int | None, Field(title="Keep Alive")] = None
+    core_config_id: Annotated[int | None, Field(title="Core Config Id")] = None
+    api_key: Annotated[str | None, Field(title="Api Key")] = None
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = None
     data_limit_reset_strategy: DataLimitResetStrategy | None = None
-    reset_time: int | None = Field(None, title="Reset Time")
-    default_timeout: DefaultTimeout | None = Field(None, title="Default Timeout")
-    internal_timeout: InternalTimeout | None = Field(None, title="Internal Timeout")
-    proxy_url: ProxyUrl | None = Field(None, title="Proxy Url")
+    reset_time: Annotated[int | None, Field(title="Reset Time")] = None
+    default_timeout: Annotated[
+        int | None, Field(title="Default Timeout")
+    ] = None
+    internal_timeout: Annotated[
+        int | None, Field(title="Internal Timeout")
+    ] = None
+    proxy_url: Annotated[str | None, Field(title="Proxy Url")] = None
     status: NodeStatus | None = None
 
 
 class NodeResponse(BaseModel):
-    name: str = Field(..., title="Name")
-    address: str = Field(..., title="Address")
-    port: int | None = Field(62050, title="Port")
-    api_port: int | None = Field(62051, title="Api Port")
-    usage_coefficient: float | None = Field(1.0, ge=0.0, title="Usage Coefficient")
+    name: Annotated[str, Field(title="Name")]
+    address: Annotated[str, Field(title="Address")]
+    port: Annotated[int | None, Field(title="Port")] = 62050
+    api_port: Annotated[int | None, Field(title="Api Port")] = 62051
+    usage_coefficient: Annotated[
+        float | None, Field(ge=0.0, title="Usage Coefficient")
+    ] = 1.0
     connection_type: NodeConnectionType
-    server_ca: str = Field(..., title="Server Ca")
-    keep_alive: int = Field(..., title="Keep Alive")
-    core_config_id: int | None = Field(..., title="Core Config Id")
-    api_key: str | None = Field(..., title="Api Key")
-    data_limit: int | None = Field(0, title="Data Limit")
+    server_ca: Annotated[str, Field(title="Server Ca")]
+    keep_alive: Annotated[int, Field(title="Keep Alive")]
+    core_config_id: Annotated[int | None, Field(title="Core Config Id")]
+    api_key: Annotated[str | None, Field(title="Api Key")]
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = 0
     data_limit_reset_strategy: DataLimitResetStrategy | None = "no_reset"
-    reset_time: int | None = Field(-1, title="Reset Time")
-    default_timeout: int | None = Field(10, ge=3, title="Default Timeout")
-    internal_timeout: int | None = Field(15, ge=3, le=60, title="Internal Timeout")
-    proxy_url: ProxyUrl | None = Field(None, title="Proxy Url")
-    id: int = Field(..., title="Id")
-    xray_version: str | None = Field(..., title="Xray Version")
-    node_version: str | None = Field(..., title="Node Version")
+    reset_time: Annotated[int | None, Field(title="Reset Time")] = -1
+    default_timeout: Annotated[int | None, Field(ge=3, title="Default Timeout")] = 10
+    internal_timeout: Annotated[
+        int | None, Field(ge=3, le=60, title="Internal Timeout")
+    ] = 15
+    proxy_url: Annotated[str | None, Field(title="Proxy Url")] = None
+    id: Annotated[int, Field(title="Id")]
+    xray_version: Annotated[str | None, Field(title="Xray Version")]
+    node_version: Annotated[str | None, Field(title="Node Version")]
     status: NodeStatus
-    message: str | None = Field(..., title="Message")
-    uplink: int | None = Field(0, title="Uplink")
-    downlink: int | None = Field(0, title="Downlink")
-    lifetime_uplink: int | None = Field(None, title="Lifetime Uplink")
-    lifetime_downlink: int | None = Field(None, title="Lifetime Downlink")
-    core_version: str | None = Field(..., title="Core Version")
+    message: Annotated[str | None, Field(title="Message")]
+    uplink: Annotated[int | None, Field(title="Uplink")] = 0
+    downlink: Annotated[int | None, Field(title="Downlink")] = 0
+    lifetime_uplink: Annotated[int | None, Field(title="Lifetime Uplink")] = None
+    lifetime_downlink: Annotated[int | None, Field(title="Lifetime Downlink")] = None
+    core_version: Annotated[str | None, Field(title="Core Version")]
 
 
 class NodeSimple(BaseModel):
@@ -2366,49 +2274,61 @@ class NodeSimple(BaseModel):
     Lightweight node model with only id and name for performance.
     """
 
-    id: int = Field(..., title="Id")
-    name: str = Field(..., title="Name")
+    id: Annotated[int, Field(title="Id")]
+    name: Annotated[str, Field(title="Name")]
     status: NodeStatus
 
 
 class NodeStatsList(BaseModel):
     period: Period | None = None
-    start: AwareDatetime = Field(..., title="Start")
-    end: AwareDatetime = Field(..., title="End")
-    stats: list[NodeStats] = Field(..., title="Stats")
+    start: Annotated[AwareDatetime, Field(title="Start")]
+    end: Annotated[AwareDatetime, Field(title="End")]
+    stats: Annotated[list[NodeStats], Field(title="Stats")]
 
 
 class NodeUsageStatsList(BaseModel):
     period: Period | None = None
-    start: AwareDatetime = Field(..., title="Start")
-    end: AwareDatetime = Field(..., title="End")
-    stats: dict[str, list[NodeUsageStat]] = Field(..., title="Stats")
+    start: Annotated[AwareDatetime, Field(title="Start")]
+    end: Annotated[AwareDatetime, Field(title="End")]
+    stats: Annotated[dict[str, list[NodeUsageStat]], Field(title="Stats")]
 
 
 class NodesPermissions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    create: bool | dict[str, PermissionScope | int] | None = Field(None, title="Create")
-    read: bool | dict[str, PermissionScope | int] | None = Field(None, title="Read")
-    read_simple: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Read Simple"
-    )
-    update: bool | dict[str, PermissionScope | int] | None = Field(None, title="Update")
-    delete: bool | dict[str, PermissionScope | int] | None = Field(None, title="Delete")
-    reconnect: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Reconnect"
-    )
-    update_core: bool | dict[str, PermissionScope | int] | None = Field(
-        None, title="Update Core"
-    )
-    logs: bool | dict[str, PermissionScope | int] | None = Field(None, title="Logs")
-    stats: bool | dict[str, PermissionScope | int] | None = Field(None, title="Stats")
+    create: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Create")
+    ] = None
+    read: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read")
+    ] = None
+    read_simple: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Read Simple")
+    ] = None
+    update: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Update")
+    ] = None
+    delete: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Delete")
+    ] = None
+    reconnect: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Reconnect")
+    ] = None
+    update_core: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Update Core")
+    ] = None
+    logs: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Logs")
+    ] = None
+    stats: Annotated[
+        bool | dict[str, PermissionScope | int] | None, Field(title="Stats")
+    ] = None
 
 
 class NodesResponse(BaseModel):
-    nodes: list[NodeResponse] = Field(..., title="Nodes")
-    total: int = Field(..., title="Total")
+    nodes: Annotated[list[NodeResponse], Field(title="Nodes")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class NodesSimpleResponse(BaseModel):
@@ -2416,12 +2336,12 @@ class NodesSimpleResponse(BaseModel):
     Response model for lightweight node list.
     """
 
-    nodes: list[NodeSimple] = Field(..., title="Nodes")
-    total: int = Field(..., title="Total")
+    nodes: Annotated[list[NodeSimple], Field(title="Nodes")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class NoiseSettings(BaseModel):
-    xray: list[XrayNoiseSettings] | None = Field(None, title="Xray")
+    xray: Annotated[list[XrayNoiseSettings] | None, Field(title="Xray")] = None
 
 
 class NotificationEnable(BaseModel):
@@ -2434,27 +2354,27 @@ class NotificationEnable(BaseModel):
     user: UserNotificationEnable | None = None
     user_template: BaseNotificationEnable | None = None
     api_key: BaseNotificationEnable | None = None
-    days_left: bool | None = Field(True, title="Days Left")
-    percentage_reached: bool | None = Field(True, title="Percentage Reached")
+    days_left: Annotated[bool | None, Field(title="Days Left")] = True
+    percentage_reached: Annotated[bool | None, Field(title="Percentage Reached")] = True
 
 
 class OutboundStats(BaseModel):
-    outbound: str = Field(..., title="Outbound")
-    node_id: int = Field(..., title="Node Id")
-    node_name: str = Field(..., title="Node Name")
-    uplink: int = Field(..., title="Uplink")
-    downlink: int = Field(..., title="Downlink")
-    alive: bool | None = Field(None, title="Alive")
-    delay: int | None = Field(None, title="Delay")
-    last_probe_at: AwareDatetime | None = Field(None, title="Last Probe At")
-    uptime_pct: float | None = Field(None, title="Uptime Pct")
-    in_config: bool | None = Field(True, title="In Config")
-    traffic: list[OutboundTrafficPoint] | None = Field(
-        [], title="Traffic", validate_default=True
-    )
-    probes: list[OutboundProbePoint] | None = Field(
-        [], title="Probes", validate_default=True
-    )
+    outbound: Annotated[str, Field(title="Outbound")]
+    node_id: Annotated[int, Field(title="Node Id")]
+    node_name: Annotated[str, Field(title="Node Name")]
+    uplink: Annotated[int, Field(title="Uplink")]
+    downlink: Annotated[int, Field(title="Downlink")]
+    alive: Annotated[bool | None, Field(title="Alive")] = None
+    delay: Annotated[int | None, Field(title="Delay")] = None
+    last_probe_at: Annotated[AwareDatetime | None, Field(title="Last Probe At")] = None
+    uptime_pct: Annotated[float | None, Field(title="Uptime Pct")] = None
+    in_config: Annotated[bool | None, Field(title="In Config")] = True
+    traffic: Annotated[
+        list[OutboundTrafficPoint] | None, Field(title="Traffic", validate_default=True)
+    ] = []
+    probes: Annotated[
+        list[OutboundProbePoint] | None, Field(title="Probes", validate_default=True)
+    ] = []
 
 
 class ProxyTable(BaseModel):
@@ -2491,346 +2411,410 @@ class RolePermissions(BaseModel):
 
 class SubscriptionUserResponse(BaseModel):
     proxy_settings: ProxyTable | None = None
-    expire: AwareDatetime | int | None = Field(None, title="Expire")
-    data_limit: DataLimit | None = Field(None, title="Data Limit")
+    expire: Annotated[AwareDatetime | int | None, Field(title="Expire")] = None
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = None
     """
     data_limit can be 0 or greater
     """
     data_limit_reset_strategy: DataLimitResetStrategy | None = None
-    on_hold_expire_duration: OnHoldExpireDuration | None = Field(
-        None, title="On Hold Expire Duration"
-    )
+    on_hold_expire_duration: Annotated[
+        int | None, Field(title="On Hold Expire Duration")
+    ] = None
     """
     on_hold_expire_duration can be 0 or greater in seconds
     """
-    on_hold_timeout: AwareDatetime | int | None = Field(None, title="On Hold Timeout")
-    group_ids: list[int] | None = Field(None, title="Group Ids")
-    hwid_limit: int | None = Field(None, title="Hwid Limit")
-    device_limit: DeviceLimit | None = Field(None, title="Device Limit")
+    on_hold_timeout: Annotated[
+        AwareDatetime | int | None, Field(title="On Hold Timeout")
+    ] = None
+    group_ids: Annotated[list[int] | None, Field(title="Group Ids")] = None
+    hwid_limit: Annotated[int | None, Field(title="Hwid Limit")] = None
+    device_limit: Annotated[int | None, Field(title="Device Limit")] = None
     next_plan: NextPlanModel | None = None
-    id: int = Field(..., title="Id")
-    username: str = Field(..., title="Username")
+    id: Annotated[int, Field(title="Id")]
+    username: Annotated[str, Field(title="Username")]
     status: UserStatus
-    used_traffic: int = Field(..., title="Used Traffic")
-    lifetime_used_traffic: int | None = Field(0, title="Lifetime Used Traffic")
-    created_at: AwareDatetime = Field(..., title="Created At")
-    edit_at: AwareDatetime | None = Field(None, title="Edit At")
-    online_at: AwareDatetime | None = Field(None, title="Online At")
-    ip: str | None = Field(None, title="Ip")
+    used_traffic: Annotated[int, Field(title="Used Traffic")]
+    lifetime_used_traffic: Annotated[
+        int | None, Field(title="Lifetime Used Traffic")
+    ] = 0
+    created_at: Annotated[AwareDatetime, Field(title="Created At")]
+    edit_at: Annotated[AwareDatetime | None, Field(title="Edit At")] = None
+    online_at: Annotated[AwareDatetime | None, Field(title="Online At")] = None
+    ip: Annotated[str | None, Field(title="Ip")] = None
 
 
 class UserCreate(BaseModel):
     proxy_settings: ProxyTable | None = None
-    expire: AwareDatetime | int | None = Field(None, title="Expire")
-    data_limit: DataLimit | None = Field(None, title="Data Limit")
+    expire: Annotated[AwareDatetime | int | None, Field(title="Expire")] = None
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = None
     """
     data_limit can be 0 or greater
     """
     data_limit_reset_strategy: DataLimitResetStrategy | None = None
-    note: Note4 | None = Field(None, title="Note")
-    on_hold_expire_duration: OnHoldExpireDuration | None = Field(
-        None, title="On Hold Expire Duration"
-    )
+    note: Annotated[str | None, Field(title="Note")] = None
+    on_hold_expire_duration: Annotated[
+        int | None, Field(title="On Hold Expire Duration")
+    ] = None
     """
     on_hold_expire_duration can be 0 or greater in seconds
     """
-    on_hold_timeout: AwareDatetime | int | None = Field(None, title="On Hold Timeout")
-    group_ids: list[int] | None = Field(None, title="Group Ids")
-    auto_delete_in_days: int | None = Field(None, title="Auto Delete In Days")
-    hwid_limit: int | None = Field(None, title="Hwid Limit")
-    device_limit: DeviceLimit | None = Field(None, title="Device Limit")
+    on_hold_timeout: Annotated[
+        AwareDatetime | int | None, Field(title="On Hold Timeout")
+    ] = None
+    group_ids: Annotated[list[int] | None, Field(title="Group Ids")] = None
+    auto_delete_in_days: Annotated[int | None, Field(title="Auto Delete In Days")] = (
+        None
+    )
+    hwid_limit: Annotated[int | None, Field(title="Hwid Limit")] = None
+    device_limit: Annotated[int | None, Field(title="Device Limit")] = None
     next_plan: NextPlanModel | None = None
-    username: str = Field(..., title="Username")
+    username: Annotated[str, Field(title="Username")]
     status: UserStatus | None = None
 
 
 class UserEventList(BaseModel):
-    events: list[UserEventResponse] = Field(..., title="Events")
+    events: Annotated[list[UserEventResponse], Field(title="Events")]
 
 
 class UserHWIDListResponse(BaseModel):
-    hwids: list[UserHWIDResponse] = Field(..., title="Hwids")
-    count: int = Field(..., title="Count")
+    hwids: Annotated[list[UserHWIDResponse], Field(title="Hwids")]
+    count: Annotated[int, Field(title="Count")]
 
 
 class UserIpSeenList(BaseModel):
-    days: int = Field(..., title="Days")
-    ips: list[UserIpSeenResponse] = Field(..., title="Ips")
-    distinct_ips: int = Field(..., title="Distinct Ips")
-    distinct_countries: int = Field(..., title="Distinct Countries")
+    days: Annotated[int, Field(title="Days")]
+    ips: Annotated[list[UserIpSeenResponse], Field(title="Ips")]
+    distinct_ips: Annotated[int, Field(title="Distinct Ips")]
+    distinct_countries: Annotated[int, Field(title="Distinct Countries")]
 
 
 class UserModify(BaseModel):
     proxy_settings: ProxyTable | None = None
-    expire: AwareDatetime | int | None = Field(None, title="Expire")
-    data_limit: DataLimit | None = Field(None, title="Data Limit")
+    expire: Annotated[AwareDatetime | int | None, Field(title="Expire")] = None
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = None
     """
     data_limit can be 0 or greater
     """
     data_limit_reset_strategy: DataLimitResetStrategy | None = None
-    note: Note4 | None = Field(None, title="Note")
-    on_hold_expire_duration: OnHoldExpireDuration | None = Field(
-        None, title="On Hold Expire Duration"
-    )
+    note: Annotated[str | None, Field(title="Note")] = None
+    on_hold_expire_duration: Annotated[
+        int | None, Field(title="On Hold Expire Duration")
+    ] = None
     """
     on_hold_expire_duration can be 0 or greater in seconds
     """
-    on_hold_timeout: AwareDatetime | int | None = Field(None, title="On Hold Timeout")
-    group_ids: list[int] | None = Field(None, title="Group Ids")
-    auto_delete_in_days: int | None = Field(None, title="Auto Delete In Days")
-    hwid_limit: int | None = Field(None, title="Hwid Limit")
-    device_limit: DeviceLimit | None = Field(None, title="Device Limit")
+    on_hold_timeout: Annotated[
+        AwareDatetime | int | None, Field(title="On Hold Timeout")
+    ] = None
+    group_ids: Annotated[list[int] | None, Field(title="Group Ids")] = None
+    auto_delete_in_days: Annotated[int | None, Field(title="Auto Delete In Days")] = (
+        None
+    )
+    hwid_limit: Annotated[int | None, Field(title="Hwid Limit")] = None
+    device_limit: Annotated[int | None, Field(title="Device Limit")] = None
     next_plan: NextPlanModel | None = None
     status: UserStatus | None = None
 
 
 class UserResponse(BaseModel):
     proxy_settings: ProxyTable | None = None
-    expire: AwareDatetime | int | None = Field(None, title="Expire")
-    data_limit: DataLimit | None = Field(None, title="Data Limit")
+    expire: Annotated[AwareDatetime | int | None, Field(title="Expire")] = None
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = None
     """
     data_limit can be 0 or greater
     """
     data_limit_reset_strategy: DataLimitResetStrategy | None = None
-    note: Note4 | None = Field(None, title="Note")
-    on_hold_expire_duration: OnHoldExpireDuration | None = Field(
-        None, title="On Hold Expire Duration"
-    )
+    note: Annotated[str | None, Field(title="Note")] = None
+    on_hold_expire_duration: Annotated[
+        int | None, Field(title="On Hold Expire Duration")
+    ] = None
     """
     on_hold_expire_duration can be 0 or greater in seconds
     """
-    on_hold_timeout: AwareDatetime | int | None = Field(None, title="On Hold Timeout")
-    group_ids: list[int] | None = Field(None, title="Group Ids")
-    auto_delete_in_days: int | None = Field(None, title="Auto Delete In Days")
-    hwid_limit: int | None = Field(None, title="Hwid Limit")
-    device_limit: DeviceLimit | None = Field(None, title="Device Limit")
+    on_hold_timeout: Annotated[
+        AwareDatetime | int | None, Field(title="On Hold Timeout")
+    ] = None
+    group_ids: Annotated[list[int] | None, Field(title="Group Ids")] = None
+    auto_delete_in_days: Annotated[int | None, Field(title="Auto Delete In Days")] = (
+        None
+    )
+    hwid_limit: Annotated[int | None, Field(title="Hwid Limit")] = None
+    device_limit: Annotated[int | None, Field(title="Device Limit")] = None
     next_plan: NextPlanModel | None = None
-    id: int = Field(..., title="Id")
-    username: str = Field(..., title="Username")
+    id: Annotated[int, Field(title="Id")]
+    username: Annotated[str, Field(title="Username")]
     status: UserStatus
-    used_traffic: int = Field(..., title="Used Traffic")
-    lifetime_used_traffic: int | None = Field(0, title="Lifetime Used Traffic")
-    created_at: AwareDatetime = Field(..., title="Created At")
-    edit_at: AwareDatetime | None = Field(None, title="Edit At")
-    online_at: AwareDatetime | None = Field(None, title="Online At")
-    subscription_url: str | None = Field("", title="Subscription Url")
+    used_traffic: Annotated[int, Field(title="Used Traffic")]
+    lifetime_used_traffic: Annotated[
+        int | None, Field(title="Lifetime Used Traffic")
+    ] = 0
+    created_at: Annotated[AwareDatetime, Field(title="Created At")]
+    edit_at: Annotated[AwareDatetime | None, Field(title="Edit At")] = None
+    online_at: Annotated[AwareDatetime | None, Field(title="Online At")] = None
+    subscription_url: Annotated[str | None, Field(title="Subscription Url")] = ""
     admin: AdminBase | None = None
 
 
 class UserSubscriptionUpdateChart(BaseModel):
     period: Period | None = None
-    start: AwareDatetime = Field(..., title="Start")
-    end: AwareDatetime = Field(..., title="End")
-    total: int = Field(..., title="Total")
-    segments: list[UserSubscriptionUpdateChartSegment] | None = Field(
-        None, title="Segments"
-    )
-    stats: list[UserSubscriptionUpdateChartStat] | None = Field(None, title="Stats")
+    start: Annotated[AwareDatetime, Field(title="Start")]
+    end: Annotated[AwareDatetime, Field(title="End")]
+    total: Annotated[int, Field(title="Total")]
+    segments: Annotated[
+        list[UserSubscriptionUpdateChartSegment] | None, Field(title="Segments")
+    ] = None
+    stats: Annotated[
+        list[UserSubscriptionUpdateChartStat] | None, Field(title="Stats")
+    ] = None
 
 
 class UserSubscriptionUpdateList(BaseModel):
-    updates: list[UserSubscriptionUpdateSchema] | None = Field(None, title="Updates")
-    count: int = Field(..., title="Count")
+    updates: Annotated[
+        list[UserSubscriptionUpdateSchema] | None, Field(title="Updates")
+    ] = None
+    count: Annotated[int, Field(title="Count")]
 
 
 class UserTemplateCreate(BaseModel):
-    name: str | None = Field(None, title="Name")
-    data_limit: DataLimit | None = Field(None, title="Data Limit")
+    name: Annotated[str | None, Field(title="Name")] = None
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = None
     """
     data_limit can be 0 or greater
     """
-    hwid_limit: int | None = Field(None, title="Hwid Limit")
-    device_limit: DeviceLimit4 | None = Field(None, title="Device Limit")
+    hwid_limit: Annotated[int | None, Field(title="Hwid Limit")] = None
+    device_limit: Annotated[int | None, Field(title="Device Limit")] = None
     """
     concurrent devices per user; 0 or None = unlimited
     """
-    expire_duration: ExpireDuration | None = Field(None, title="Expire Duration")
+    expire_duration: Annotated[
+        int | None, Field(title="Expire Duration")
+    ] = None
     """
     expire_duration can be 0 or greater in seconds
     """
-    username_prefix: UsernamePrefix | None = Field(None, title="Username Prefix")
-    username_suffix: UsernameSuffix | None = Field(None, title="Username Suffix")
-    group_ids: list[int] = Field(..., title="Group Ids")
+    username_prefix: Annotated[
+        str | None, Field(title="Username Prefix")
+    ] = None
+    username_suffix: Annotated[
+        str | None, Field(title="Username Suffix")
+    ] = None
+    group_ids: Annotated[list[int], Field(title="Group Ids")]
     extra_settings: ExtraSettings | None = None
     status: UserStatusCreate | None = None
-    reset_usages: bool | None = Field(None, title="Reset Usages")
-    on_hold_timeout: int | None = Field(None, title="On Hold Timeout")
+    reset_usages: Annotated[bool | None, Field(title="Reset Usages")] = None
+    on_hold_timeout: Annotated[int | None, Field(title="On Hold Timeout")] = None
     data_limit_reset_strategy: DataLimitResetStrategy | None = "no_reset"
-    is_disabled: bool | None = Field(None, title="Is Disabled")
+    is_disabled: Annotated[bool | None, Field(title="Is Disabled")] = None
 
 
 class UserTemplateModify(BaseModel):
-    name: str | None = Field(None, title="Name")
-    data_limit: DataLimit | None = Field(None, title="Data Limit")
+    name: Annotated[str | None, Field(title="Name")] = None
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = None
     """
     data_limit can be 0 or greater
     """
-    hwid_limit: int | None = Field(None, title="Hwid Limit")
-    device_limit: DeviceLimit4 | None = Field(None, title="Device Limit")
+    hwid_limit: Annotated[int | None, Field(title="Hwid Limit")] = None
+    device_limit: Annotated[int | None, Field(title="Device Limit")] = None
     """
     concurrent devices per user; 0 or None = unlimited
     """
-    expire_duration: ExpireDuration | None = Field(None, title="Expire Duration")
+    expire_duration: Annotated[
+        int | None, Field(title="Expire Duration")
+    ] = None
     """
     expire_duration can be 0 or greater in seconds
     """
-    username_prefix: UsernamePrefix | None = Field(None, title="Username Prefix")
-    username_suffix: UsernameSuffix | None = Field(None, title="Username Suffix")
-    group_ids: list[int] | None = Field(None, title="Group Ids")
+    username_prefix: Annotated[
+        str | None, Field(title="Username Prefix")
+    ] = None
+    username_suffix: Annotated[
+        str | None, Field(title="Username Suffix")
+    ] = None
+    group_ids: Annotated[list[int] | None, Field(title="Group Ids")] = None
     extra_settings: ExtraSettings | None = None
     status: UserStatusCreate | None = None
-    reset_usages: bool | None = Field(None, title="Reset Usages")
-    on_hold_timeout: int | None = Field(None, title="On Hold Timeout")
+    reset_usages: Annotated[bool | None, Field(title="Reset Usages")] = None
+    on_hold_timeout: Annotated[int | None, Field(title="On Hold Timeout")] = None
     data_limit_reset_strategy: DataLimitResetStrategy | None = "no_reset"
-    is_disabled: bool | None = Field(None, title="Is Disabled")
+    is_disabled: Annotated[bool | None, Field(title="Is Disabled")] = None
 
 
 class UserTemplateResponse(BaseModel):
-    name: str | None = Field(None, title="Name")
-    data_limit: DataLimit | None = Field(None, title="Data Limit")
+    name: Annotated[str | None, Field(title="Name")] = None
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = None
     """
     data_limit can be 0 or greater
     """
-    hwid_limit: int | None = Field(None, title="Hwid Limit")
-    device_limit: DeviceLimit4 | None = Field(None, title="Device Limit")
+    hwid_limit: Annotated[int | None, Field(title="Hwid Limit")] = None
+    device_limit: Annotated[int | None, Field(title="Device Limit")] = None
     """
     concurrent devices per user; 0 or None = unlimited
     """
-    expire_duration: ExpireDuration | None = Field(None, title="Expire Duration")
+    expire_duration: Annotated[
+        int | None, Field(title="Expire Duration")
+    ] = None
     """
     expire_duration can be 0 or greater in seconds
     """
-    username_prefix: UsernamePrefix | None = Field(None, title="Username Prefix")
-    username_suffix: UsernameSuffix | None = Field(None, title="Username Suffix")
-    group_ids: list[int] = Field(..., title="Group Ids")
+    username_prefix: Annotated[
+        str | None, Field(title="Username Prefix")
+    ] = None
+    username_suffix: Annotated[
+        str | None, Field(title="Username Suffix")
+    ] = None
+    group_ids: Annotated[list[int], Field(title="Group Ids")]
     extra_settings: ExtraSettings | None = None
     status: UserStatusCreate | None = None
-    reset_usages: bool | None = Field(None, title="Reset Usages")
-    on_hold_timeout: int | None = Field(None, title="On Hold Timeout")
+    reset_usages: Annotated[bool | None, Field(title="Reset Usages")] = None
+    on_hold_timeout: Annotated[int | None, Field(title="On Hold Timeout")] = None
     data_limit_reset_strategy: DataLimitResetStrategy | None = "no_reset"
-    is_disabled: bool | None = Field(None, title="Is Disabled")
-    id: int = Field(..., title="Id")
+    is_disabled: Annotated[bool | None, Field(title="Is Disabled")] = None
+    id: Annotated[int, Field(title="Id")]
 
 
 class UsersResponse(BaseModel):
-    users: list[UserResponse] = Field(..., title="Users")
-    total: int = Field(..., title="Total")
+    users: Annotated[list[UserResponse], Field(title="Users")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class Webhook(BaseModel):
-    enable: bool | None = Field(False, title="Enable")
-    webhooks: list[WebhookInfo] | None = Field(
-        [], title="Webhooks", validate_default=True
-    )
-    days_left: list[int] | None = Field([], title="Days Left")
-    usage_percent: list[int] | None = Field([], title="Usage Percent")
-    timeout: int = Field(..., gt=0, title="Timeout")
-    recurrent: int = Field(..., gt=0, title="Recurrent")
-    proxy_url: str | None = Field(None, title="Proxy Url")
+    enable: Annotated[bool | None, Field(title="Enable")] = False
+    webhooks: Annotated[
+        list[WebhookInfo] | None, Field(title="Webhooks", validate_default=True)
+    ] = []
+    days_left: Annotated[list[int] | None, Field(title="Days Left")] = []
+    usage_percent: Annotated[list[int] | None, Field(title="Usage Percent")] = []
+    timeout: Annotated[int, Field(gt=0, title="Timeout")]
+    recurrent: Annotated[int, Field(gt=0, title="Recurrent")]
+    proxy_url: Annotated[str | None, Field(title="Proxy Url")] = None
 
 
 class XHttpSettings(BaseModel):
     mode: XHttpModes | None = None
-    no_grpc_header: bool | None = Field(None, title="No Grpc Header")
-    x_padding_bytes: XPaddingBytes | None = Field(None, title="X Padding Bytes")
-    x_padding_obfs_mode: bool | None = Field(None, title="X Padding Obfs Mode")
-    x_padding_key: str | None = Field(None, title="X Padding Key")
-    x_padding_header: str | None = Field(None, title="X Padding Header")
-    x_padding_placement: XPaddingPlacement | None = Field(
-        None, title="X Padding Placement"
+    no_grpc_header: Annotated[bool | None, Field(title="No Grpc Header")] = None
+    x_padding_bytes: Annotated[str | None, Field(title="X Padding Bytes")] = (
+        None
     )
-    x_padding_method: XPaddingMethod | None = Field(None, title="X Padding Method")
-    uplink_http_method: str | None = Field(None, title="Uplink Http Method")
-    session_placement: SessionPlacement | None = Field(None, title="Session Placement")
-    session_key: str | None = Field(None, title="Session Key")
-    session_id_table: SessionIdTable | None = Field(None, title="Session Id Table")
-    session_id_length: SessionIdLength | None = Field(None, title="Session Id Length")
-    seq_placement: SeqPlacement | None = Field(None, title="Seq Placement")
-    seq_key: str | None = Field(None, title="Seq Key")
-    uplink_data_placement: UplinkDataPlacement | None = Field(
-        None, title="Uplink Data Placement"
+    x_padding_obfs_mode: Annotated[bool | None, Field(title="X Padding Obfs Mode")] = (
+        None
     )
-    uplink_data_key: str | None = Field(None, title="Uplink Data Key")
-    uplink_chunk_size: UplinkChunkSize | None = Field(None, title="Uplink Chunk Size")
-    sc_max_each_post_bytes: ScMaxEachPostBytes | None = Field(
-        None, title="Sc Max Each Post Bytes"
-    )
-    sc_min_posts_interval_ms: ScMinPostsIntervalMs | None = Field(
-        None, title="Sc Min Posts Interval Ms"
-    )
+    x_padding_key: Annotated[str | None, Field(title="X Padding Key")] = None
+    x_padding_header: Annotated[str | None, Field(title="X Padding Header")] = None
+    x_padding_placement: Annotated[
+        str | None, Field(title="X Padding Placement")
+    ] = None
+    x_padding_method: Annotated[
+        str | None, Field(title="X Padding Method")
+    ] = None
+    uplink_http_method: Annotated[str | None, Field(title="Uplink Http Method")] = None
+    session_placement: Annotated[
+        str | None, Field(title="Session Placement")
+    ] = None
+    session_key: Annotated[str | None, Field(title="Session Key")] = None
+    session_id_table: Annotated[
+        str | None, Field(title="Session Id Table")
+    ] = None
+    session_id_length: Annotated[
+        str | None, Field(title="Session Id Length")
+    ] = None
+    seq_placement: Annotated[str | None, Field(title="Seq Placement")] = None
+    seq_key: Annotated[str | None, Field(title="Seq Key")] = None
+    uplink_data_placement: Annotated[
+        str | None, Field(title="Uplink Data Placement")
+    ] = None
+    uplink_data_key: Annotated[str | None, Field(title="Uplink Data Key")] = None
+    uplink_chunk_size: Annotated[
+        str | None, Field(title="Uplink Chunk Size")
+    ] = None
+    sc_max_each_post_bytes: Annotated[
+        str | None, Field(title="Sc Max Each Post Bytes")
+    ] = None
+    sc_min_posts_interval_ms: Annotated[
+        str | None, Field(title="Sc Min Posts Interval Ms")
+    ] = None
     xmux: XMuxSettings | None = None
-    download_settings: int | None = Field(None, title="Download Settings")
+    download_settings: Annotated[int | None, Field(title="Download Settings")] = None
 
 
 class APIKeyCreate(BaseModel):
-    name: str = Field(..., max_length=128, min_length=1, title="Name")
-    note: Note | None = Field(None, title="Note")
+    name: Annotated[str, Field(max_length=128, min_length=1, title="Name")]
+    note: Annotated[str | None, Field(title="Note")] = None
     permissions: RolePermissions | None = None
-    inherit_permissions: bool | None = Field(True, title="Inherit Permissions")
-    expire_date: AwareDatetime | None = Field(None, title="Expire Date")
-    admin_id: AdminId | None = Field(None, title="Admin Id")
+    inherit_permissions: Annotated[bool | None, Field(title="Inherit Permissions")] = (
+        True
+    )
+    expire_date: Annotated[AwareDatetime | None, Field(title="Expire Date")] = None
+    admin_id: Annotated[int | None, Field(title="Admin Id")] = None
 
 
 class APIKeyCreateResponse(BaseModel):
-    name: str = Field(..., max_length=128, min_length=1, title="Name")
-    note: Note | None = Field(None, title="Note")
+    name: Annotated[str, Field(max_length=128, min_length=1, title="Name")]
+    note: Annotated[str | None, Field(title="Note")] = None
     permissions: RolePermissions | None = None
-    inherit_permissions: bool | None = Field(True, title="Inherit Permissions")
-    expire_date: AwareDatetime | None = Field(None, title="Expire Date")
-    id: int = Field(..., title="Id")
-    admin_id: int = Field(..., title="Admin Id")
-    created_at: AwareDatetime = Field(..., title="Created At")
-    api_key_trimmed: str = Field(..., title="Api Key Trimmed")
-    revoked_at: AwareDatetime | None = Field(None, title="Revoked At")
+    inherit_permissions: Annotated[bool | None, Field(title="Inherit Permissions")] = (
+        True
+    )
+    expire_date: Annotated[AwareDatetime | None, Field(title="Expire Date")] = None
+    id: Annotated[int, Field(title="Id")]
+    admin_id: Annotated[int, Field(title="Admin Id")]
+    created_at: Annotated[AwareDatetime, Field(title="Created At")]
+    api_key_trimmed: Annotated[str, Field(title="Api Key Trimmed")]
+    revoked_at: Annotated[AwareDatetime | None, Field(title="Revoked At")] = None
     status: APIKeyStatus | None = "active"
-    is_expired: bool | None = Field(False, title="Is Expired")
-    api_key: str = Field(..., title="Api Key")
+    is_expired: Annotated[bool | None, Field(title="Is Expired")] = False
+    api_key: Annotated[str, Field(title="Api Key")]
 
 
 class APIKeyResponse(BaseModel):
-    name: str = Field(..., max_length=128, min_length=1, title="Name")
-    note: Note | None = Field(None, title="Note")
+    name: Annotated[str, Field(max_length=128, min_length=1, title="Name")]
+    note: Annotated[str | None, Field(title="Note")] = None
     permissions: RolePermissions | None = None
-    inherit_permissions: bool | None = Field(True, title="Inherit Permissions")
-    expire_date: AwareDatetime | None = Field(None, title="Expire Date")
-    id: int = Field(..., title="Id")
-    admin_id: int = Field(..., title="Admin Id")
-    created_at: AwareDatetime = Field(..., title="Created At")
-    api_key_trimmed: str = Field(..., title="Api Key Trimmed")
-    revoked_at: AwareDatetime | None = Field(None, title="Revoked At")
+    inherit_permissions: Annotated[bool | None, Field(title="Inherit Permissions")] = (
+        True
+    )
+    expire_date: Annotated[AwareDatetime | None, Field(title="Expire Date")] = None
+    id: Annotated[int, Field(title="Id")]
+    admin_id: Annotated[int, Field(title="Admin Id")]
+    created_at: Annotated[AwareDatetime, Field(title="Created At")]
+    api_key_trimmed: Annotated[str, Field(title="Api Key Trimmed")]
+    revoked_at: Annotated[AwareDatetime | None, Field(title="Revoked At")] = None
     status: APIKeyStatus | None = "active"
-    is_expired: bool | None = Field(False, title="Is Expired")
+    is_expired: Annotated[bool | None, Field(title="Is Expired")] = False
 
 
 class APIKeyUpdate(BaseModel):
-    admin_id: AdminId | None = Field(None, title="Admin Id")
-    name: Name | None = Field(None, title="Name")
-    note: Note | None = Field(None, title="Note")
+    admin_id: Annotated[int | None, Field(title="Admin Id")] = None
+    name: Annotated[str | None, Field(title="Name")] = None
+    note: Annotated[str | None, Field(title="Note")] = None
     permissions: RolePermissions | None = None
-    inherit_permissions: bool | None = Field(None, title="Inherit Permissions")
-    expire_date: AwareDatetime | None = Field(None, title="Expire Date")
+    inherit_permissions: Annotated[bool | None, Field(title="Inherit Permissions")] = (
+        None
+    )
+    expire_date: Annotated[AwareDatetime | None, Field(title="Expire Date")] = None
     status: APIKeyStatus | None = None
 
 
 class APIKeysResponse(BaseModel):
-    api_keys: list[APIKeyResponse] = Field(..., title="Api Keys")
-    total: int = Field(..., title="Total")
+    api_keys: Annotated[list[APIKeyResponse], Field(title="Api Keys")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class AdminRoleCreate(BaseModel):
-    name: str = Field(..., max_length=64, title="Name")
+    name: Annotated[str, Field(max_length=64, title="Name")]
     permissions: RolePermissions | None = None
     limits: RoleLimits | None = None
     features: RoleFeatures | None = None
     access: RoleAccess | None = None
     hwid: RoleHWIDSettings | None = None
-    disabled_when_limited: bool | None = Field(False, title="Disabled When Limited")
-    disconnect_users_when_limited: bool | None = Field(
-        True, title="Disconnect Users When Limited"
-    )
-    disconnect_users_when_disabled: bool | None = Field(
-        True, title="Disconnect Users When Disabled"
-    )
+    disabled_when_limited: Annotated[
+        bool | None, Field(title="Disabled When Limited")
+    ] = False
+    disconnect_users_when_limited: Annotated[
+        bool | None, Field(title="Disconnect Users When Limited")
+    ] = True
+    disconnect_users_when_disabled: Annotated[
+        bool | None, Field(title="Disconnect Users When Disabled")
+    ] = True
 
 
 class AdminRoleData(BaseModel):
@@ -2838,107 +2822,125 @@ class AdminRoleData(BaseModel):
     Runtime role data carried on AdminDetails — only the fields needed for permission checks.
     """
 
-    id: int | None = Field(None, title="Id")
-    name: str | None = Field("", title="Name")
-    is_owner: bool | None = Field(False, title="Is Owner")
+    id: Annotated[int | None, Field(title="Id")] = None
+    name: Annotated[str | None, Field(title="Name")] = ""
+    is_owner: Annotated[bool | None, Field(title="Is Owner")] = False
     permissions: RolePermissions | None = None
     limits: RoleLimits | None = None
     features: RoleFeatures | None = None
     access: RoleAccess | None = None
     hwid: RoleHWIDSettings | None = None
-    disabled_when_limited: bool | None = Field(False, title="Disabled When Limited")
-    disconnect_users_when_limited: bool | None = Field(
-        True, title="Disconnect Users When Limited"
-    )
-    disconnect_users_when_disabled: bool | None = Field(
-        True, title="Disconnect Users When Disabled"
-    )
+    disabled_when_limited: Annotated[
+        bool | None, Field(title="Disabled When Limited")
+    ] = False
+    disconnect_users_when_limited: Annotated[
+        bool | None, Field(title="Disconnect Users When Limited")
+    ] = True
+    disconnect_users_when_disabled: Annotated[
+        bool | None, Field(title="Disconnect Users When Disabled")
+    ] = True
 
 
 class AdminRoleModify(BaseModel):
-    name: Name1 | None = Field(None, title="Name")
+    name: Annotated[str | None, Field(title="Name")] = None
     permissions: RolePermissions | None = None
     limits: RoleLimits | None = None
     features: RoleFeatures | None = None
     access: RoleAccess | None = None
     hwid: RoleHWIDSettings | None = None
-    disabled_when_limited: bool | None = Field(None, title="Disabled When Limited")
-    disconnect_users_when_limited: bool | None = Field(
-        None, title="Disconnect Users When Limited"
-    )
-    disconnect_users_when_disabled: bool | None = Field(
-        None, title="Disconnect Users When Disabled"
-    )
+    disabled_when_limited: Annotated[
+        bool | None, Field(title="Disabled When Limited")
+    ] = None
+    disconnect_users_when_limited: Annotated[
+        bool | None, Field(title="Disconnect Users When Limited")
+    ] = None
+    disconnect_users_when_disabled: Annotated[
+        bool | None, Field(title="Disconnect Users When Disabled")
+    ] = None
 
 
 class AdminRoleResponse(BaseModel):
-    name: str = Field(..., max_length=64, title="Name")
+    name: Annotated[str, Field(max_length=64, title="Name")]
     permissions: RolePermissions | None = None
     limits: RoleLimits | None = None
     features: RoleFeatures | None = None
     access: RoleAccess | None = None
     hwid: RoleHWIDSettings | None = None
-    disabled_when_limited: bool | None = Field(False, title="Disabled When Limited")
-    disconnect_users_when_limited: bool | None = Field(
-        True, title="Disconnect Users When Limited"
-    )
-    disconnect_users_when_disabled: bool | None = Field(
-        True, title="Disconnect Users When Disabled"
-    )
-    id: int = Field(..., title="Id")
-    is_owner: bool = Field(..., title="Is Owner")
-    created_at: AwareDatetime = Field(..., title="Created At")
+    disabled_when_limited: Annotated[
+        bool | None, Field(title="Disabled When Limited")
+    ] = False
+    disconnect_users_when_limited: Annotated[
+        bool | None, Field(title="Disconnect Users When Limited")
+    ] = True
+    disconnect_users_when_disabled: Annotated[
+        bool | None, Field(title="Disconnect Users When Disabled")
+    ] = True
+    id: Annotated[int, Field(title="Id")]
+    is_owner: Annotated[bool, Field(title="Is Owner")]
+    created_at: Annotated[AwareDatetime, Field(title="Created At")]
 
 
 class AdminRolesResponse(BaseModel):
-    roles: list[AdminRoleResponse] = Field(..., title="Roles")
-    total: int = Field(..., title="Total")
+    roles: Annotated[list[AdminRoleResponse], Field(title="Roles")]
+    total: Annotated[int, Field(title="Total")]
 
 
 class Application(BaseModel):
-    name: str = Field(..., max_length=32, title="Name")
-    icon_url: str | None = Field("", max_length=512, title="Icon Url")
-    import_url: str | None = Field("", max_length=256, title="Import Url")
-    description: dict[Language, str] | None = Field(None, title="Description")
-    recommended: bool | None = Field(False, title="Recommended")
-    show_when_hwid_enabled: bool | None = Field(False, title="Show When Hwid Enabled")
+    name: Annotated[str, Field(max_length=32, title="Name")]
+    icon_url: Annotated[str | None, Field(max_length=512, title="Icon Url")] = ""
+    import_url: Annotated[str | None, Field(max_length=256, title="Import Url")] = ""
+    description: Annotated[dict[Language, str] | None, Field(title="Description")] = (
+        None
+    )
+    recommended: Annotated[bool | None, Field(title="Recommended")] = False
+    show_when_hwid_enabled: Annotated[
+        bool | None, Field(title="Show When Hwid Enabled")
+    ] = False
     platform: Platform
-    download_links: list[DownloadLink] = Field(..., title="Download Links")
+    download_links: Annotated[list[DownloadLink], Field(title="Download Links")]
 
 
 class CoreOutboundStats(BaseModel):
-    core_id: int = Field(..., title="Core Id")
-    start: AwareDatetime = Field(..., title="Start")
-    end: AwareDatetime = Field(..., title="End")
-    outbounds: list[OutboundStats] = Field(..., title="Outbounds")
+    core_id: Annotated[int, Field(title="Core Id")]
+    start: Annotated[AwareDatetime, Field(title="Start")]
+    end: Annotated[AwareDatetime, Field(title="End")]
+    outbounds: Annotated[list[OutboundStats], Field(title="Outbounds")]
 
 
 class FinalMask(BaseModel):
     model_config = ConfigDict(
         extra="allow",
     )
-    tcp: list[FinalMaskTcpLayer] | None = Field(None, title="Tcp")
-    udp: list[FinalMaskUdpLayer] | None = Field(None, title="Udp")
+    tcp: Annotated[list[FinalMaskTcpLayer] | None, Field(title="Tcp")] = None
+    udp: Annotated[list[FinalMaskUdpLayer] | None, Field(title="Udp")] = None
     quicParams: FinalMaskQuicParams | None = None
 
 
 class Subscription(BaseModel):
-    url_prefix: str | None = Field("", title="Url Prefix")
-    update_interval: int | None = Field(12, title="Update Interval")
-    support_url: str | None = Field("https://t.me/", title="Support Url")
-    profile_title: str | None = Field("Subscription", title="Profile Title")
-    announce: str | None = Field("", max_length=128, title="Announce")
-    announce_url: str | None = Field("", title="Announce Url")
-    response_headers: dict[str, Any] | None = Field(None, title="Response Headers")
-    rules: list[SubRule] = Field(..., title="Rules")
+    url_prefix: Annotated[str | None, Field(title="Url Prefix")] = ""
+    update_interval: Annotated[int | None, Field(title="Update Interval")] = 12
+    support_url: Annotated[str | None, Field(title="Support Url")] = "https://t.me/"
+    profile_title: Annotated[str | None, Field(title="Profile Title")] = "Subscription"
+    announce: Annotated[str | None, Field(max_length=128, title="Announce")] = ""
+    announce_url: Annotated[str | None, Field(title="Announce Url")] = ""
+    response_headers: Annotated[
+        dict[str, Any] | None, Field(title="Response Headers")
+    ] = None
+    rules: Annotated[list[SubRule], Field(title="Rules")]
     manual_sub_request: SubFormatEnable | None = None
-    applications: list[Application] | None = Field(None, title="Applications")
-    allow_browser_config: bool | None = Field(True, title="Allow Browser Config")
-    disable_sub_template: bool | None = Field(False, title="Disable Sub Template")
-    randomize_order: bool | None = Field(False, title="Randomize Order")
-    custom_variables: list[CustomVariable] | None = Field(
-        None, title="Custom Variables"
+    applications: Annotated[list[Application] | None, Field(title="Applications")] = (
+        None
     )
+    allow_browser_config: Annotated[
+        bool | None, Field(title="Allow Browser Config")
+    ] = True
+    disable_sub_template: Annotated[
+        bool | None, Field(title="Disable Sub Template")
+    ] = False
+    randomize_order: Annotated[bool | None, Field(title="Randomize Order")] = False
+    custom_variables: Annotated[
+        list[CustomVariable] | None, Field(title="Custom Variables")
+    ] = None
 
 
 class TransportSettings(BaseModel):
@@ -2954,29 +2956,31 @@ class AdminDetails(BaseModel):
     Complete admin model with all fields for database representation and API responses.
     """
 
-    id: int | None = Field(None, title="Id")
-    username: str = Field(..., title="Username")
-    telegram_id: int | None = Field(None, title="Telegram Id")
-    discord_webhook: str | None = Field(None, title="Discord Webhook")
-    sub_domain: str | None = Field(None, title="Sub Domain")
-    profile_title: str | None = Field(None, title="Profile Title")
-    support_url: str | None = Field(None, title="Support Url")
-    custom_variables: list[CustomVariable] | None = Field(
-        None, title="Custom Variables"
-    )
+    id: Annotated[int | None, Field(title="Id")] = None
+    username: Annotated[str, Field(title="Username")]
+    telegram_id: Annotated[int | None, Field(title="Telegram Id")] = None
+    discord_webhook: Annotated[str | None, Field(title="Discord Webhook")] = None
+    sub_domain: Annotated[str | None, Field(title="Sub Domain")] = None
+    profile_title: Annotated[str | None, Field(title="Profile Title")] = None
+    support_url: Annotated[str | None, Field(title="Support Url")] = None
+    custom_variables: Annotated[
+        list[CustomVariable] | None, Field(title="Custom Variables")
+    ] = None
     notification_enable: UserNotificationEnable | None = None
-    total_users: int | None = Field(0, title="Total Users")
-    used_traffic: int | None = Field(0, title="Used Traffic")
-    data_limit: int | None = Field(None, title="Data Limit")
+    total_users: Annotated[int | None, Field(title="Total Users")] = 0
+    used_traffic: Annotated[int | None, Field(title="Used Traffic")] = 0
+    data_limit: Annotated[int | None, Field(title="Data Limit")] = None
     status: AdminStatus | None = "active"
-    sub_template: str | None = Field(None, title="Sub Template")
-    lifetime_used_traffic: int | None = Field(None, title="Lifetime Used Traffic")
-    note: str | None = Field(None, title="Note")
+    sub_template: Annotated[str | None, Field(title="Sub Template")] = None
+    lifetime_used_traffic: Annotated[
+        int | None, Field(title="Lifetime Used Traffic")
+    ] = None
+    note: Annotated[str | None, Field(title="Note")] = None
     role: AdminRoleData | None = None
     permission_overrides: RoleLimits | None = None
-    totp_enabled: bool | None = Field(False, title="Totp Enabled")
-    is_disabled: bool = Field(..., title="Is Disabled")
-    is_limited: bool = Field(..., title="Is Limited")
+    totp_enabled: Annotated[bool | None, Field(title="Totp Enabled")] = False
+    is_disabled: Annotated[bool, Field(title="Is Disabled")]
+    is_limited: Annotated[bool, Field(title="Is Limited")]
 
 
 class AdminsResponse(BaseModel):
@@ -2984,81 +2988,85 @@ class AdminsResponse(BaseModel):
     Response model for admins list with pagination and statistics.
     """
 
-    admins: list[AdminDetails] = Field(..., title="Admins")
-    total: int = Field(..., title="Total")
-    active: int = Field(..., title="Active")
-    disabled: int = Field(..., title="Disabled")
-    limited: int = Field(..., title="Limited")
+    admins: Annotated[list[AdminDetails], Field(title="Admins")]
+    total: Annotated[int, Field(title="Total")]
+    active: Annotated[int, Field(title="Active")]
+    disabled: Annotated[int, Field(title="Disabled")]
+    limited: Annotated[int, Field(title="Limited")]
 
 
 class BaseHost(BaseModel):
-    id: int | None = Field(None, title="Id")
-    remark: str = Field(..., title="Remark")
-    address: list[str] | None = Field(None, title="Address")
-    inbound_tag: str | None = Field(None, title="Inbound Tag")
-    port: int | None = Field(None, title="Port")
-    sni: Sni | None = Field(None, title="Sni")
-    host: Host | None = Field(None, title="Host")
-    path: str | None = Field(None, title="Path")
+    id: Annotated[int | None, Field(title="Id")] = None
+    remark: Annotated[str, Field(title="Remark")]
+    address: Annotated[list[str] | None, Field(title="Address")] = None
+    inbound_tag: Annotated[str | None, Field(title="Inbound Tag")] = None
+    port: Annotated[int | None, Field(title="Port")] = None
+    sni: Annotated[list[str] | None, Field(title="Sni")] = None
+    host: Annotated[list[str] | None, Field(title="Host")] = None
+    path: Annotated[str | None, Field(title="Path")] = None
     security: ProxyHostSecurity | None = "inbound_default"
-    alpn: list[ProxyHostALPN] | None = Field(None, title="Alpn")
+    alpn: Annotated[list[ProxyHostALPN] | None, Field(title="Alpn")] = None
     fingerprint: ProxyHostFingerprint | None = ""
-    allowinsecure: bool | None = Field(None, title="Allowinsecure")
-    is_disabled: bool | None = Field(False, title="Is Disabled")
-    http_headers: dict[str, str] | None = Field(None, title="Http Headers")
+    allowinsecure: Annotated[bool | None, Field(title="Allowinsecure")] = None
+    is_disabled: Annotated[bool | None, Field(title="Is Disabled")] = False
+    http_headers: Annotated[dict[str, str] | None, Field(title="Http Headers")] = None
     transport_settings: TransportSettings | None = None
     mux_settings: MuxSettingsOutput | None = None
     fragment_settings: FragmentSettings | None = None
     noise_settings: NoiseSettings | None = None
-    random_user_agent: bool | None = Field(False, title="Random User Agent")
-    use_sni_as_host: bool | None = Field(False, title="Use Sni As Host")
-    vless_route: VlessRoute | None = Field(None, title="Vless Route")
-    priority: int = Field(..., title="Priority")
-    status: Status2 | None = Field(None, title="Status")
+    random_user_agent: Annotated[bool | None, Field(title="Random User Agent")] = False
+    use_sni_as_host: Annotated[bool | None, Field(title="Use list[str] As Host")] = False
+    vless_route: Annotated[str | None, Field(title="Vless Route")] = None
+    priority: Annotated[int, Field(title="Priority")]
+    status: Annotated[list[UserStatus] | None, Field(title="Status")] = None
     ech: ECHSettings | None = None
-    pinned_peer_cert_sha256: str | None = Field(None, title="Pinned Peer Cert Sha256")
-    verify_peer_cert_by_name: VerifyPeerCertByName | None = Field(
-        None, title="Verify Peer Cert By Name"
-    )
+    pinned_peer_cert_sha256: Annotated[
+        str | None, Field(title="Pinned Peer Cert Sha256")
+    ] = None
+    verify_peer_cert_by_name: Annotated[
+        list[str] | None, Field(title="Verify Peer Cert By Name")
+    ] = None
     wireguard_overrides: WireGuardHostOverrides | None = None
     subscription_templates: SubscriptionTemplates | None = None
     final_mask_settings: FinalMask | None = None
-    cipher_suites: str | None = Field(None, title="Cipher Suites")
+    cipher_suites: Annotated[str | None, Field(title="Cipher Suites")] = None
 
 
 class CreateHost(BaseModel):
-    id: int | None = Field(None, title="Id")
-    remark: str = Field(..., title="Remark")
-    address: list[str] | None = Field(None, title="Address")
-    inbound_tag: str | None = Field(None, title="Inbound Tag")
-    port: int | None = Field(None, title="Port")
-    sni: Sni | None = Field(None, title="Sni")
-    host: Host | None = Field(None, title="Host")
-    path: str | None = Field(None, title="Path")
+    id: Annotated[int | None, Field(title="Id")] = None
+    remark: Annotated[str, Field(title="Remark")]
+    address: Annotated[list[str] | None, Field(title="Address")] = None
+    inbound_tag: Annotated[str | None, Field(title="Inbound Tag")] = None
+    port: Annotated[int | None, Field(title="Port")] = None
+    sni: Annotated[list[str] | None, Field(title="Sni")] = None
+    host: Annotated[list[str] | None, Field(title="Host")] = None
+    path: Annotated[str | None, Field(title="Path")] = None
     security: ProxyHostSecurity | None = "inbound_default"
-    alpn: list[ProxyHostALPN] | None = Field(None, title="Alpn")
+    alpn: Annotated[list[ProxyHostALPN] | None, Field(title="Alpn")] = None
     fingerprint: ProxyHostFingerprint | None = ""
-    allowinsecure: bool | None = Field(None, title="Allowinsecure")
-    is_disabled: bool | None = Field(False, title="Is Disabled")
-    http_headers: dict[str, str] | None = Field(None, title="Http Headers")
+    allowinsecure: Annotated[bool | None, Field(title="Allowinsecure")] = None
+    is_disabled: Annotated[bool | None, Field(title="Is Disabled")] = False
+    http_headers: Annotated[dict[str, str] | None, Field(title="Http Headers")] = None
     transport_settings: TransportSettings | None = None
     mux_settings: MuxSettingsInput | None = None
     fragment_settings: FragmentSettings | None = None
     noise_settings: NoiseSettings | None = None
-    random_user_agent: bool | None = Field(False, title="Random User Agent")
-    use_sni_as_host: bool | None = Field(False, title="Use Sni As Host")
-    vless_route: VlessRoute | None = Field(None, title="Vless Route")
-    priority: int = Field(..., title="Priority")
-    status: Status2 | None = Field(None, title="Status")
+    random_user_agent: Annotated[bool | None, Field(title="Random User Agent")] = False
+    use_sni_as_host: Annotated[bool | None, Field(title="Use list[str] As Host")] = False
+    vless_route: Annotated[str | None, Field(title="Vless Route")] = None
+    priority: Annotated[int, Field(title="Priority")]
+    status: Annotated[list[UserStatus] | None, Field(title="Status")] = None
     ech: ECHSettings | None = None
-    pinned_peer_cert_sha256: str | None = Field(None, title="Pinned Peer Cert Sha256")
-    verify_peer_cert_by_name: VerifyPeerCertByName | None = Field(
-        None, title="Verify Peer Cert By Name"
-    )
+    pinned_peer_cert_sha256: Annotated[
+        str | None, Field(title="Pinned Peer Cert Sha256")
+    ] = None
+    verify_peer_cert_by_name: Annotated[
+        list[str] | None, Field(title="Verify Peer Cert By Name")
+    ] = None
     wireguard_overrides: WireGuardHostOverrides | None = None
     subscription_templates: SubscriptionTemplates | None = None
     final_mask_settings: FinalMask | None = None
-    cipher_suites: str | None = Field(None, title="Cipher Suites")
+    cipher_suites: Annotated[str | None, Field(title="Cipher Suites")] = None
 
 
 class SettingsSchema(BaseModel):

@@ -307,3 +307,39 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+# --- post-processing of models.py -------------------------------------------------------------
+ROOT_RE = re.compile(
+    r"^class (?P<name>\w+)\(RootModel\[(?P<type>[^\]]+(?:\[[^\]]*\])?)\]\):\n(?:[ \t].*\n|\n)*",
+    re.MULTILINE,
+)
+
+
+def collapse_root_models() -> None:
+    """Inline single-value RootModel wrappers so ``user.data_limit`` is an ``int``, not ``DataLimit(root=...)``.
+
+    datamodel-codegen emits a RootModel for every ``anyOf`` member that carries a
+    constraint (``minimum``, ``maxLength``...). The panel validates those anyway,
+    so plain types are friendlier for callers.
+    """
+    path = ROOT / "src" / "ixraypy" / "models.py"
+    src = path.read_text()
+    mapping: dict[str, str] = {}
+    for m in ROOT_RE.finditer(src):
+        mapping[m.group("name")] = m.group("type").strip()
+    src = ROOT_RE.sub("", src)
+    # Resolve chains (a root model of a root model) before substituting.
+    for name in list(mapping):
+        t = mapping[name]
+        while t in mapping:
+            t = mapping[t]
+        mapping[name] = t
+    for name, t in mapping.items():
+        src = re.sub(rf"(?<![\"'\w.]){name}(?![\"'\w])", t, src)
+    path.write_text(src)
+    print(f"collapsed {len(mapping)} root models")
+
+
+if __name__ == "__main__":
+    collapse_root_models()
