@@ -17,16 +17,15 @@ or a plain `dict` with the same fields. Query parameters are keyword-only.
 | `ix.groups` | `GroupsResource` | 11 |
 | `ix.hosts` | `HostsResource` | 9 |
 | `ix.hwids` | `HwidsResource` | 3 |
-| `ix.nodes` | `NodesResource` | 39 |
+| `ix.misc` | `MiscResource` | 2 |
+| `ix.nodes` | `NodesResource` | 42 |
+| `ix.push` | `PushResource` | 2 |
 | `ix.settings` | `SettingsResource` | 4 |
-| `ix.setup` | `SetupResource` | 4 |
+| `ix.setup` | `SetupResource` | 5 |
 | `ix.subscription` | `SubscriptionResource` | 7 |
 | `ix.system` | `SystemResource` | 7 |
 | `ix.user_templates` | `UserTemplatesResource` | 9 |
 | `ix.users` | `UsersResource` | 61 |
-| `ix.misc` | `MiscResource` | 2 |
-
-229 methods in total.
 
 ## `ix.admin` — AdminResource
 
@@ -430,6 +429,16 @@ or a plain `dict` with the same fields. Query parameters are keyword-only.
 
 `POST /api/user/{user_id}/hwids/reset` — Reset User Hwids
 
+## `ix.misc` — MiscResource
+
+### `base() -> 'str'`
+
+`GET /` — Base
+
+### `health() -> 'dict[str, Any]'`
+
+`GET /health` — Health
+
 ## `ix.nodes` — NodesResource
 
 ### `bulk_delete_nodes(*, body: 'models.BulkNodeSelection | dict[str, Any]') -> 'models.RemoveNodesResponse'`
@@ -460,6 +469,10 @@ or a plain `dict` with the same fields. Query parameters are keyword-only.
 
 `DELETE /api/nodes/clear_usage_data/{table}` — Clear usage data from a specified table
 
+### `create_install(*, body: 'models.InstallCreate | dict[str, Any]') -> 'models.InstallResponse'`
+
+`POST /api/node/install` — Create Install
+
 ### `create_node(*, body: 'models.NodeCreate | dict[str, Any]') -> 'models.NodeResponse'`
 
 `POST /api/node` — Create Node
@@ -467,6 +480,10 @@ or a plain `dict` with the same fields. Query parameters are keyword-only.
 ### `get_core_releases(*, core: 'str') -> 'models.CoreReleasesResponse'`
 
 `GET /api/node/core_releases` — Get Core Releases
+
+### `get_install(install_id: 'int') -> 'models.InstallResponse'`
+
+`GET /api/node/install/{install_id}` — Get Install
 
 ### `get_node(node_id: 'int') -> 'models.NodeResponse'`
 
@@ -508,10 +525,6 @@ or a plain `dict` with the same fields. Query parameters are keyword-only.
 
 `GET /api/node/{node_id}/routing/balancer/{tag}` — Node Balancer Info
 
-### `node_logs(node_id: 'int') -> 'AsyncIterator[str]'`
-
-`GET /api/node/{node_id}/logs` — Node Logs
-
 ### `node_outbounds_latency(node_id: 'int', *, name: 'str | None' = None, timeout: 'int | None' = None, fresh: 'bool | None' = None) -> 'models.NodeOutboundsLatencyResponse'`
 
 `GET /api/node/{node_id}/outbounds_latency` — Node Outbounds Latency
@@ -532,6 +545,10 @@ or a plain `dict` with the same fields. Query parameters are keyword-only.
 
 `POST /api/node/{node_id}/routing/test` — Node Test Route
 
+### `nodes_latency() -> 'models.ServerLatencyList'`
+
+`GET /api/nodes/latency` — Nodes Latency
+
 ### `nodes_online_counts() -> 'models.NodesOnlineCounts'`
 
 `GET /api/nodes/online_counts` — Nodes Online Counts
@@ -551,6 +568,10 @@ or a plain `dict` with the same fields. Query parameters are keyword-only.
 ### `reconnect_node(node_id: 'int') -> 'Any'`
 
 `POST /api/node/{node_id}/reconnect` — Reconnect Node
+
+### `refresh_nodes_latency() -> 'models.ServerLatencyList'`
+
+`POST /api/nodes/latency/refresh` — Refresh Nodes Latency
 
 ### `remove_node(node_id: 'int') -> 'None'`
 
@@ -588,6 +609,16 @@ or a plain `dict` with the same fields. Query parameters are keyword-only.
 
 `GET /api/node/{node_id}/online_stats/{user_id}` — User Online Stats
 
+## `ix.push` — PushResource
+
+### `push_send(*, body: 'models.PushSend | dict[str, Any]') -> 'models.PushResult'`
+
+`POST /api/push/send` — Push Send
+
+### `push_subscribers() -> 'models.PushSubscribers'`
+
+`GET /api/push/subscribers` — Push Subscribers
+
 ## `ix.settings` — SettingsResource
 
 ### `get_general_settings() -> 'models.General'`
@@ -619,6 +650,10 @@ or a plain `dict` with the same fields. Query parameters are keyword-only.
 ### `reset_owner_password(*, body: 'models.OwnerResetRequest | dict[str, Any]') -> 'models.AdminDetails'`
 
 `PATCH /api/setup/owner` — Reset Owner Password
+
+### `setup_status() -> 'dict[str, Any]'`
+
+`GET /api/setup/status` — Setup Status
 
 ### `upgrade_owner(*, body: 'models.OwnerUpgradeRequest | dict[str, Any]') -> 'models.AdminDetails'`
 
@@ -967,13 +1002,3 @@ or a plain `dict` with the same fields. Query parameters are keyword-only.
 ### `set_user_disabled_by_username(username: 'str', *, body: 'models.UserStatusToggle | dict[str, Any]') -> 'models.UserResponse'`
 
 `PUT /api/user/by-username/{username}/disabled` — Set User Disabled By Username
-
-## `ix.misc` — MiscResource
-
-### `base() -> 'str'`
-
-`GET /` — Base
-
-### `health() -> 'dict[str, Any]'`
-
-`GET /health` — Health

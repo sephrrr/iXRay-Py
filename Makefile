@@ -12,6 +12,7 @@ generate:        ## regenerate models and resource classes from spec/openapi.jso
 	  --use-schema-description --use-field-description --target-python-version 3.11 \
 	  --disable-timestamp --use-double-quotes --collapse-root-models
 	uv run python scripts/generate.py
+	uv run python scripts/reference.py
 	uv run ruff format src scripts
 	uv run ruff check src scripts --fix
 
