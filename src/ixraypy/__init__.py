@@ -1,6 +1,6 @@
 """ixraypy: async Python client for the iXRay panel API."""
 
-__version__ = "0.2.0"
+__version__ = "0.1.0"
 
 from ixraypy import models
 from ixraypy.client import IXRayClient
