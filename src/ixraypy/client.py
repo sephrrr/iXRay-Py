@@ -21,6 +21,7 @@ from ixraypy.resources import (
     HwidsResource,
     MiscResource,
     NodesResource,
+    PushResource,
     SettingsResource,
     SetupResource,
     SubscriptionResource,
@@ -99,6 +100,7 @@ class IXRayClient:
         self.groups = GroupsResource(self._http)
         self.hosts = HostsResource(self._http)
         self.hwids = HwidsResource(self._http)
+        self.push = PushResource(self._http)
         self.misc = MiscResource(self._http)
         self.nodes = NodesResource(self._http)
         self.settings = SettingsResource(self._http)

@@ -11,6 +11,7 @@ from ixraypy.resources.hosts import HostsResource
 from ixraypy.resources.hwids import HwidsResource
 from ixraypy.resources.misc import MiscResource
 from ixraypy.resources.nodes import NodesResource
+from ixraypy.resources.push import PushResource
 from ixraypy.resources.settings import SettingsResource
 from ixraypy.resources.setup import SetupResource
 from ixraypy.resources.subscription import SubscriptionResource
@@ -30,6 +31,7 @@ __all__ = [
     "HwidsResource",
     "MiscResource",
     "NodesResource",
+    "PushResource",
     "SettingsResource",
     "SetupResource",
     "SubscriptionResource",

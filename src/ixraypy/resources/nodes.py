@@ -623,6 +623,40 @@ class NodesResource:
         data = await self._http.request("get", path, params=params, headers=headers)
         return models.NodesOnlineCounts.model_validate(data)
 
+    async def nodes_latency(self) -> models.ServerLatencyList:
+        """Nodes Latency.
+
+        Latest TCP-connect round trips between node servers and from the panel, for the latency map.
+
+        A server is a node address; ``source`` null means the panel measured. Rounds run every ``interval`` seconds.
+
+        ``GET /api/nodes/latency``
+
+        Returns:
+            models.ServerLatencyList
+        """
+        path = "/api/nodes/latency"
+        params = None
+        headers = None
+        data = await self._http.request("get", path, params=params, headers=headers)
+        return models.ServerLatencyList.model_validate(data)
+
+    async def refresh_nodes_latency(self) -> models.ServerLatencyList:
+        """Refresh Nodes Latency.
+
+        Measure the round trips now (skipped when a round finished in the last 30 seconds) and return them.
+
+        ``POST /api/nodes/latency/refresh``
+
+        Returns:
+            models.ServerLatencyList
+        """
+        path = "/api/nodes/latency/refresh"
+        params = None
+        headers = None
+        data = await self._http.request("post", path, params=params, headers=headers)
+        return models.ServerLatencyList.model_validate(data)
+
     async def realtime_nodes_stats(self) -> dict[str, Any]:
         """Realtime Nodes Stats.
 
@@ -851,3 +885,41 @@ class NodesResource:
         headers = None
         data = await self._http.request("post", path, params=params, headers=headers, json=_dump(body))
         return models.BulkNodesActionResponse.model_validate(data)
+
+    async def create_install(self, *, body: models.InstallCreate | dict[str, Any]) -> models.InstallResponse:
+        """Create Install.
+
+        Start an install run and return its one-time token (shown only here).
+
+        ``POST /api/node/install``
+
+        Args:
+            body: Request payload (a model instance or a plain dict).
+
+        Returns:
+            models.InstallResponse
+        """
+        path = "/api/node/install"
+        params = None
+        headers = None
+        data = await self._http.request("post", path, params=params, headers=headers, json=_dump(body))
+        return models.InstallResponse.model_validate(data)
+
+    async def get_install(self, install_id: int) -> models.InstallResponse:
+        """Get Install.
+
+        Live progress of an install run.
+
+        ``GET /api/node/install/{install_id}``
+
+        Args:
+            install_id:
+
+        Returns:
+            models.InstallResponse
+        """
+        path = _fmt("/api/node/install/{install_id}", {"install_id": install_id})
+        params = None
+        headers = None
+        data = await self._http.request("get", path, params=params, headers=headers)
+        return models.InstallResponse.model_validate(data)

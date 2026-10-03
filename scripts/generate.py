@@ -34,6 +34,7 @@ TAGS = {
     "Subscription": ("subscription", "SubscriptionResource", "subscription"),
     "User Template": ("user_templates", "UserTemplatesResource", "user_templates"),
     "User HWID": ("hwids", "HwidsResource", "hwids"),
+    "Push": ("push", "PushResource", "push"),
     "-": ("misc", "MiscResource", "misc"),
 }
 

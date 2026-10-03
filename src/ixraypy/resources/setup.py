@@ -16,6 +16,21 @@ class SetupResource:
     def __init__(self, http: HttpTransport) -> None:
         self._http = http
 
+    async def setup_status(self) -> dict[str, Any]:
+        """Setup Status.
+
+        Whether the panel still needs its owner account; the sign-in page offers setup only then.
+
+        ``GET /api/setup/status``
+
+        Returns:
+            dict[str, Any]
+        """
+        path = "/api/setup/status"
+        params = None
+        headers = None
+        return await self._http.request("get", path, params=params, headers=headers)
+
     async def create_owner(self, *, body: models.OwnerCreateRequest | dict[str, Any]) -> models.AdminDetails:
         """Create Owner.
 

@@ -78,6 +78,11 @@ class AdminsSimpleResponse(BaseModel):
     total: Annotated[int, Field(title="Total")]
 
 
+class AppInfo(BaseModel):
+    platforms: Annotated[list[str], Field(title="Platforms")]
+    last_opened_at: Annotated[AwareDatetime, Field(title="Last Opened At")]
+
+
 class Backup(BaseModel):
     """
     Scheduled PostgreSQL dumps kept on the panel's data volume.
@@ -712,6 +717,28 @@ class InboundSummary(BaseModel):
     tag: Annotated[str, Field(title="Tag")]
     protocol: Annotated[str, Field(title="Protocol")]
     network: Annotated[str | None, Field(title="Network")] = None
+    security: Annotated[str | None, Field(title="Security")] = None
+    sni: Annotated[list[str] | None, Field(title="Sni")] = []
+
+
+class InstallNode(BaseModel):
+    id: Annotated[int, Field(title="Id")]
+    name: Annotated[str, Field(title="Name")]
+    port: Annotated[int, Field(title="Port")]
+    status: Annotated[str, Field(title="Status")]
+
+
+class InstallService(BaseModel):
+    core_config_id: Annotated[int, Field(title="Core Config Id")]
+    port: Annotated[int, Field(ge=1, le=65535, title="Port")]
+
+
+class InstallStep(BaseModel):
+    key: Annotated[str, Field(title="Key")]
+    label: Annotated[str, Field(title="Label")]
+    state: Annotated[str, Field(title="State")]
+    detail: Annotated[str | None, Field(title="Detail")] = ""
+    at: Annotated[AwareDatetime, Field(title="At")]
 
 
 class KCPSettings(BaseModel):
@@ -1039,6 +1066,28 @@ class ProxyHostSecurity(StrEnum):
     tls = "tls"
 
 
+class PushResult(BaseModel):
+    users: Annotated[int, Field(title="Users")]
+    devices: Annotated[int, Field(title="Devices")]
+    sent: Annotated[int, Field(title="Sent")]
+    gone: Annotated[int, Field(title="Gone")]
+    failed: Annotated[int, Field(title="Failed")]
+
+
+class PushSubscribers(BaseModel):
+    """
+    Per user id: devices with notifications on, and where the page is installed as an app.
+    """
+
+    users: Annotated[dict[str, int], Field(title="Users")]
+    total_users: Annotated[int, Field(title="Total Users")]
+    total_devices: Annotated[int, Field(title="Total Devices")]
+    apps: Annotated[
+        dict[str, AppInfo] | None, Field(title="Apps", validate_default=True)
+    ] = {}
+    total_apps: Annotated[int | None, Field(title="Total Apps")] = 0
+
+
 class RealityScanRequest(BaseModel):
     target: Annotated[str, Field(max_length=253, min_length=1, title="Target")]
     """
@@ -1242,6 +1291,38 @@ class RouteTestResult(BaseModel):
 class RunMethod(StrEnum):
     webhook = "webhook"
     long_polling = "long-polling"
+
+
+class ServerLatencyItem(BaseModel):
+    """
+    Latest TCP-connect round trip from one server (or the panel) to another.
+    """
+
+    source: Annotated[str | None, Field(title="Source")]
+    """
+    Node address of the measuring server; null when the panel measured
+    """
+    target: Annotated[str, Field(title="Target")]
+    """
+    Node address of the measured server
+    """
+    port: Annotated[int, Field(title="Port")]
+    ok: Annotated[bool, Field(title="Ok")]
+    rtt_ms: Annotated[float | None, Field(title="Rtt Ms")] = None
+    error: Annotated[str | None, Field(title="Error")] = None
+    measured_at: Annotated[AwareDatetime, Field(title="Measured At")]
+
+
+class ServerLatencyList(BaseModel):
+    items: Annotated[list[ServerLatencyItem], Field(title="Items")]
+    interval: Annotated[int, Field(title="Interval")]
+    """
+    Seconds between measuring rounds; 0 when measuring is off
+    """
+    panel_ip: Annotated[str | None, Field(title="Panel Ip")] = None
+    """
+    The panel's public IP as the nodes see it
+    """
 
 
 class SettingsPermissions(BaseModel):
@@ -2165,6 +2246,12 @@ class General(BaseModel):
     """
     Display name per server address on the Nodes page
     """
+    server_countries: Annotated[
+        dict[str, str] | None, Field(title="Server Countries")
+    ] = None
+    """
+    ISO country code per server address, overriding GeoIP (flag, filter and map on the Nodes page)
+    """
 
 
 class HTTPValidationError(BaseModel):
@@ -2196,6 +2283,29 @@ class HwidsPermissions(BaseModel):
     delete: Annotated[
         bool | dict[str, PermissionScope | int] | None, Field(title="Delete")
     ] = None
+
+
+class InstallCreate(BaseModel):
+    name: Annotated[str, Field(max_length=64, min_length=1, title="Name")]
+    address: Annotated[str, Field(max_length=256, min_length=1, title="Address")]
+    services: Annotated[
+        list[InstallService], Field(max_length=16, min_length=1, title="Services")
+    ]
+
+
+class InstallResponse(BaseModel):
+    id: Annotated[int, Field(title="Id")]
+    name: Annotated[str, Field(title="Name")]
+    address: Annotated[str, Field(title="Address")]
+    services: Annotated[list[dict[str, Any]], Field(title="Services")]
+    status: Annotated[str, Field(title="Status")]
+    steps: Annotated[list[InstallStep], Field(title="Steps")]
+    nodes: Annotated[
+        list[InstallNode] | None, Field(title="Nodes", validate_default=True)
+    ] = []
+    created_at: Annotated[AwareDatetime, Field(title="Created At")]
+    expires_at: Annotated[AwareDatetime, Field(title="Expires At")]
+    token: Annotated[str | None, Field(title="Token")] = None
 
 
 class MuxSettingsInput(BaseModel):
@@ -2386,6 +2496,15 @@ class ProxyTable(BaseModel):
     hysteria: HysteriaSettings | None = None
     mtproto: MTProtoSettings | None = None
     openvpn: OpenVPNSettings | None = None
+
+
+class PushSend(BaseModel):
+    title: Annotated[str, Field(max_length=80, min_length=1, title="Title")]
+    body: Annotated[str | None, Field(max_length=300, title="Body")] = ""
+    user_ids: Annotated[list[int] | None, Field(title="User Ids")] = None
+    all: Annotated[bool | None, Field(title="All")] = False
+    group_ids: Annotated[list[int] | None, Field(title="Group Ids")] = None
+    statuses: Annotated[list[UserStatus] | None, Field(title="Statuses")] = None
 
 
 class RolePermissions(BaseModel):

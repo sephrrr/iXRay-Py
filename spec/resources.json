@@ -17,7 +17,7 @@
   [
     "setup",
     "SetupResource",
-    4
+    5
   ],
   [
     "system",
@@ -57,7 +57,7 @@
   [
     "nodes",
     "NodesResource",
-    39
+    43
   ],
   [
     "users",
@@ -78,6 +78,11 @@
     "hwids",
     "HwidsResource",
     3
+  ],
+  [
+    "push",
+    "PushResource",
+    2
   ],
   [
     "misc",
